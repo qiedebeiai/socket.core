@@ -4,55 +4,54 @@
 This is a socket framework written based on C # standard, the interface design is simple, separate thread operation, does not affect the caller. Can be used in the net Framework 4.x.x / standard assembly, in the window (IOCP) / linux normal operation.
 ---
 
-Install NuGet:
-Package Manager: Install-Package socket.core
-.Net CLI: dotnet add package socket.core
-Paket CLI: paket add socket.core
-
+Install NuGet:   
+Package Manager: Install-Package socket.core   
+.Net CLI: dotnet add package socket.core   
+Paket CLI: paket add socket.core   
+   
 Server socket.core.Server namespace, respectively, three modes push / pull / pack
-Under the socket.core.Client namespace of the client, there are three modes of push / pull / pack
+Under the socket.core.   
+Client namespace of the client, there are three modes of push / pull / pack   
+  
+The main process and the corresponding methods and events introduced.  
+Note: connectId (guid) represents a connection object, data (byte []), success (bool)  
+    
+* 1. Initialize socket (corresponding to the three modes)  
+> Instantiate the server class TcpPushServer / TcpPullServer / TcpPackServer  
+> Instantiate the client class TcpPushClient / TcpPullClient / TcpPackClient  
+* 2. Start monitoring / connecting server  
+> Server server.Start (port);  
+> Client client.Connect (ip, port);  
+* 3. Trigger the connection event   
+> Server server.OnAccept (connectId); Received a connection id, can be used to send, receive, close the tag  
+> Client client.OnAccept (success); Receives whether to connect to the server successfully   
+* 4. Send a message  
+> Server server.Send (connectId, data, offset, length);  
+> Client client.Send (data, offset, length);  
+* 5. Triggered receive events  
+> Server server.OnReceive (connectId, data);   
+> Client client.OnReceive (data);   
+* 6. Close the connection   
+> Server server.Close (connectId);   
+> Client client.Close ();   
+* 7. Trigger to close the connection event   
+> Server server.OnClose (connectId);   
+> Client client.OnClose ();   
 
-The main process and the corresponding methods and events introduced.
-Note: connectId (guid) represents a connection object, data (byte []), success (bool)
-  
-* 1. Initialize socket (corresponding to the three modes)
-> Instantiate the server class TcpPushServer / TcpPullServer / TcpPackServer
-> Instantiate the client class TcpPushClient / TcpPullClient / TcpPackClient
-* 2. Start monitoring / connecting server
-> Server server.Start (port);
-> Client client.Connect (ip, port);
-* 3. Trigger the connection event
-> Server server.OnAccept (connectId); Received a connection id, can be used to send, receive, close the tag
-> Client client.OnAccept (success); Receives whether to connect to the server successfully
-* 4. Send a message
-> Server server.Send (connectId, data, offset, length);
-> Client client.Send (data, offset, length);
-* 5. Triggered receive events
-> Server server.OnReceive (connectId, data);
-> Client client.OnReceive (data);
-* 6. Close the connection
-> Server server.Close (connectId);
-> Client client.Close ();
-* 7. Trigger to close the connection event
-> Server server.OnClose (connectId);
-> Client client.OnClose ();
 
-
-Three models introduction
-* One: push
+Three models introduction   
+* One: push  
     > Will trigger the monitor event object OnReceive (connectId, data); the data immediately "pushed" to the application
-* Two: pull
+* Two: pull  
     > OnReceive (connectId, length), which tells the application how much data has been received. The application checks the length of the data. If it meets, it calls the Fetch (connectId, length) method of the component, Data "pulled" out
-* Three: pack
+* Three: pack  
     > pack The model component is a combination of the push and pull models. The application does not have to deal with subcontracts. The component guarantees that every application server.OnReceive (connectId, data) /client.OnReceive (data) event provides the application with a Complete data package
 Note: The pack model component automatically adds a 4-byte (32-bit) header to each packet sent by the application. When the component receives the data, it is automatically packetized based on the header information. Each complete packet is sent to OnReceive The event is sent to the application
-PACK header format
-XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY
-The first 10 X bits are the header identification bits, which are used for data packet verification. The effective header identification value ranges from 0 to 1023 (0x3FF). When the header identification equals 0, the header is not checked. The last 22 bits of Y are length bits. Package length. The maximum valid packet length can not exceed 4194303 (0x3FFFFF) bytes (bytes), the application can be set by the TcpPackServer / TcpPackClient constructor parameter headerFlag
-The company is located in:
-The company is located in:
-The company is located in:
-2017/12/27
+PACK header format  
+XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY  
+The first 10 X bits are the header identification bits, which are used for data packet verification. The effective header identification value ranges from 0 to 1023 (0x3FF). When the header identification equals 0, the header is not checked. The last 22 bits of Y are length bits. Package length. The maximum valid packet length can not exceed 4194303 (0x3FFFFF) bytes (bytes), the application can be set by the TcpPackServer / TcpPackClient constructor parameter headerFlag  
+
+2017/12/27  
 
 
 socket.core 
