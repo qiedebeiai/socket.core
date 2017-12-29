@@ -56,7 +56,7 @@ namespace socket.core.Server
         {
             while(tcpServer==null)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(2);
             }
             tcpServer.Start(port);
         }

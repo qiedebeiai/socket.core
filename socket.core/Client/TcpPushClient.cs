@@ -54,7 +54,7 @@ namespace socket.core.Client
         {
             while (tcpClients == null)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(2);
             }
             tcpClients.Connect(ip,port);
         }

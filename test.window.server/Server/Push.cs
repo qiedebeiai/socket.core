@@ -42,7 +42,7 @@ namespace test.window.server.Server
 
         private void Server_OnAccept(Guid obj)
         {
-            Console.WriteLine($"Push连接{obj}");
+            //Console.WriteLine($"Push连接{obj}");
         }
     }
 }
