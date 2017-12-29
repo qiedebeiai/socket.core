@@ -39,7 +39,7 @@ namespace test.window.client.Client
 
         public void Send(byte[] data,int offset,int length)
         {
-            client.Send(data, offset, length);
+            //client.Send(data, offset, length);
             Console.WriteLine($"Push发送byte[{length}]");
         }
 

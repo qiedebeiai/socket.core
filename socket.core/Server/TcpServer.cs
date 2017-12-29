@@ -71,7 +71,7 @@ namespace socket.core.Server
         /// 断开连接通知事件
         /// </summary>
         public event Action<Guid> OnClose;
-       
+        public Semaphore semaphore;
         /// <summary>
         /// 设置基本配置
         /// </summary>   
@@ -88,6 +88,7 @@ namespace socket.core.Server
             m_receivePool = new SocketAsyncEventArgsPool(numConnections);
             m_sendPool = new SocketAsyncEventArgsPool(numConnections);
             m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
+            semaphore = new Semaphore(numConnections, numConnections);
             Init();
         }
 
@@ -321,6 +322,7 @@ namespace socket.core.Server
                 default:
                     throw new ArgumentException("套接字上完成的最后一个操作不是接收或发送。");
             }
+            int a = 0;
         }
 
         #region 接受处理 receive
@@ -361,11 +363,13 @@ namespace socket.core.Server
                 {
                     ProcessReceive(e);
                 }
+                int a = 0;
             }
             else
             {
                 CloseClientSocket(e);
             }
+            int b = 1;
         }
 
         #endregion
@@ -382,6 +386,7 @@ namespace socket.core.Server
         /// <param name="length">长度</param>
         public void Send(Guid connectId, byte[] data, int offset, int length)
         {
+            semaphore.WaitOne();
             ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
             if (connect != null)
             {
@@ -394,6 +399,7 @@ namespace socket.core.Server
                     ProcessSend(connect.saea_send);
                 }
             }
+            semaphore.Release();
         }
 
         /// <summary>
@@ -407,11 +413,11 @@ namespace socket.core.Server
                 //完成将数据回传给客户端
                 AsyncUserToken token = (AsyncUserToken)e.UserToken;
                 // 读取从客户端发送的下一个数据块
-                //bool willRaiseEvent = token.Socket.SendAsync(e);
-                //if (!willRaiseEvent)
-                //{
-                //    ProcessReceive(e);
-                //}
+                bool willRaiseEvent = token.Socket.SendAsync(e);
+                if (!willRaiseEvent)
+                {
+                    ProcessSend(e);
+                }
             }
             else
             {

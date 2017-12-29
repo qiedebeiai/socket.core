@@ -36,8 +36,8 @@ namespace test.window.server.Server
         private void Server_OnReceive(Guid arg1, byte[] arg2)
         {
             Console.WriteLine($"Push接收{arg1}  byte[{arg2.Length}]");
-            server.Send(arg1, arg2, 0, arg2.Length);
-            Console.WriteLine($"Push发送{arg1}  byte[{arg2.Length}]");
+            //server.Send(arg1, arg2, 0, arg2.Length);
+            //Console.WriteLine($"Push发送{arg1}  byte[{arg2.Length}]");
         }
 
         private void Server_OnAccept(Guid obj)
