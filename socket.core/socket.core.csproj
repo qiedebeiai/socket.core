@@ -1,12 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Title>socket.core</Title>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>fengma_312@163.com</Authors>
     <Company>个人项目</Company>
     <Description>这是一个基于C# .net standard 写的socket框架，可使用于.net Framework/dotnet core程序集，能在window(IOCP)/linux运行.局域网内实测支持上万个客户端。</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/fengma312/socket.core</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/fengma312/socket.core/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>socket Async Cache Pool C# core socket.core</PackageTags>
+    <Copyright>fengma_312@163.com</Copyright>
+    <PackageReleaseNotes>socket.core</PackageReleaseNotes>
+    <RepositoryType>socket.core</RepositoryType>
   </PropertyGroup>
 
 </Project>

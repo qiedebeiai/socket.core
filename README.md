@@ -5,8 +5,10 @@ socket.core
 这是一个基于C# standard 写的socket框架，接口设计简单，单独线程运行,不影响调用方。可使用于net Framework 4.x.x/standard程序集，能在window(IOCP)/linux正常运行.
 ---
 
-安装NuGet:  Install-Package socket.core   
-
+安装NuGet:  
+Package Manager: Install-Package socket.core   
+.Net CLI :dotnet add package socket.core      
+Paket CLI:paket add socket.core         
 
 服务端所在socket.core.Server命名空间下，分别为三种模式 push/pull/pack    
 客户端所在socket.core.Client命名空间下，分别为三种模式 push/pull/pack    
