@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>fengma_312@163.com</Authors>
+    <Company>个人项目</Company>
+    <Description>这是一个基于C# .net standard 写的socket框架，可使用于.net Framework/dotnet core程序集，能在window(IOCP)/linux运行.局域网内实测支持上万个客户端。</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/fengma312/socket.core</PackageProjectUrl>
   </PropertyGroup>
 
 </Project>
