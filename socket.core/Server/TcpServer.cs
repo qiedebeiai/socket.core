@@ -386,7 +386,7 @@ namespace socket.core.Server
         /// <param name="length">长度</param>
         public void Send(Guid connectId, byte[] data, int offset, int length)
         {
-            semaphore.WaitOne();
+            //semaphore.WaitOne();
             ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
             if (connect != null)
             {
@@ -399,7 +399,7 @@ namespace socket.core.Server
                     ProcessSend(connect.saea_send);
                 }
             }
-            semaphore.Release();
+            //semaphore.Release();
         }
 
         /// <summary>

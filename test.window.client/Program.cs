@@ -27,6 +27,7 @@ namespace test.window.client
                 listPush.Add(push);
                 Thread.Sleep(2);
             }
+
             for (int i = 0; i < sendnumber; i++)
             {
                 foreach (var item in listPush)
