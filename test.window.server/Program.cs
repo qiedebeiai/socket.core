@@ -17,8 +17,10 @@ namespace test.window.server
             int receiveBufferSize = int.Parse(ConfigurationSettings.AppSettings["receiveBufferSize"]);
             int overtime = int.Parse(ConfigurationSettings.AppSettings["overtime"]);
 
-            Push push = new Push(numConnections, receiveBufferSize, overtime, port);
-            Console.WriteLine("已完成");
+            //Push push = new Push(numConnections, receiveBufferSize, overtime, port);
+            Pull pull = new Pull(numConnections, receiveBufferSize, overtime, port);
+            //Pack pack = new Pack(numConnections, receiveBufferSize, overtime, port,0x3ff);
+            Console.WriteLine("服务端已准备好!");
             Console.Read();
         }
     }

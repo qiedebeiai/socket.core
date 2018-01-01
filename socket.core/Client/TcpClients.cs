@@ -59,9 +59,9 @@ namespace socket.core.Client
         /// </summary>
         private void Init()
         {
-            buffer_receive = new byte[m_receiveBufferSize];          
+            buffer_receive = new byte[m_receiveBufferSize];
         }
-       
+
         /// <summary>
         /// 连接服务器
         /// </summary>
@@ -78,18 +78,17 @@ namespace socket.core.Client
                     ipaddr = iplist[0];
                 }
             }
-            IPEndPoint localEndPoint = new IPEndPoint(ipaddr, port);            
+            IPEndPoint localEndPoint = new IPEndPoint(ipaddr, port);
             socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             SocketAsyncEventArgs connSocketAsyncEventArgs = new SocketAsyncEventArgs();
             connSocketAsyncEventArgs.RemoteEndPoint = localEndPoint;
             connSocketAsyncEventArgs.Completed += ConnSocketAsyncEventArgs_Completed;
-            bool willConnect = socket.ConnectAsync(connSocketAsyncEventArgs);
-            if (!willConnect)
+            if (!socket.ConnectAsync(connSocketAsyncEventArgs))
             {
                 ConnSocketAsyncEventArgs_Completed(null, connSocketAsyncEventArgs);
             }
         }
-        
+
         /// <summary>
         /// 连接回调事件
         /// </summary>
@@ -97,7 +96,7 @@ namespace socket.core.Client
         /// <param name="e"></param>
         private void ConnSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
         {
-            if(e.SocketError==SocketError.Success)
+            if (e.SocketError == SocketError.Success)
             {
                 sendSocketAsyncEventArgs = new SocketAsyncEventArgs();
                 sendSocketAsyncEventArgs.Completed += ReadSocketAsyncEventArgs_Completed;
@@ -105,7 +104,7 @@ namespace socket.core.Client
                 receiveSocketAsyncEventArgs.SetBuffer(buffer_receive, 0, buffer_receive.Length);
                 receiveSocketAsyncEventArgs.Completed += ReceiveSocketAsyncEventArgs_Completed;
                 socket.ReceiveAsync(receiveSocketAsyncEventArgs);
-                if(OnAccept!=null)
+                if (OnAccept != null)
                 {
                     OnAccept(true);
                 }
@@ -127,11 +126,23 @@ namespace socket.core.Client
         /// <param name="length">长度</param>
         public void Send(byte[] data, int offset, int length)
         {
-            sendSocketAsyncEventArgs.SetBuffer(data, offset, length);
-            bool willRaiseEvent = socket.SendAsync(sendSocketAsyncEventArgs);
-            if (!willRaiseEvent)
+            if (sendSocketAsyncEventArgs.BytesTransferred == 0)
             {
-                ReadSocketAsyncEventArgs_Completed(null, sendSocketAsyncEventArgs);
+                sendSocketAsyncEventArgs.SetBuffer(data, offset, length);
+                if (!socket.SendAsync(sendSocketAsyncEventArgs))
+                {
+                    ReadSocketAsyncEventArgs_Completed(null, sendSocketAsyncEventArgs);
+                }
+            }
+            else
+            {
+                //在极限情况下，有可能异步没有发送的时候会报错
+                SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
+                saea.SetBuffer(data, offset, length);
+                if (!socket.SendAsync(saea))
+                {
+                    ReadSocketAsyncEventArgs_Completed(null, saea);
+                }
             }
         }
 
@@ -151,19 +162,18 @@ namespace socket.core.Client
         /// <param name="e"></param>
         private void ReceiveSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
         {
-            if(e.BytesTransferred>0&&e.SocketError==SocketError.Success)
+            if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
             {
                 byte[] data = new byte[e.BytesTransferred];
                 Array.Copy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
-                if(OnReceive!=null)
+                if (OnReceive != null)
                 {
                     OnReceive(data);
-                }              
+                }
                 //将收到的数据回显给客户端             
-                bool willRaiseEvent = socket.ReceiveAsync(e);
-                if (!willRaiseEvent)
+                if (!socket.ReceiveAsync(e))
                 {
-                    ReceiveSocketAsyncEventArgs_Completed(null,e);
+                    ReceiveSocketAsyncEventArgs_Completed(null, e);
                 }
             }
             else
@@ -171,7 +181,7 @@ namespace socket.core.Client
                 CloseClientSocket(e);
             }
         }
-        
+
         /// <summary>
         /// 客户端断开一个连接
         /// </summary>
@@ -190,10 +200,10 @@ namespace socket.core.Client
             // 抛出客户端进程已经关闭
             catch (Exception) { }
             socket.Close();
-            if(OnClose!=null)
+            if (OnClose != null)
             {
                 OnClose();
-            }            
+            }
         }
 
         /// <summary>

@@ -29,7 +29,6 @@ namespace test.window.client.Client
         private void Client_OnReceive(byte[] obj)
         {
             Console.WriteLine($"Push接收byte[{obj.Length}]");
-          
         }
 
         private void Client_OnAccept(bool obj)

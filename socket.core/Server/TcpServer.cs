@@ -81,7 +81,7 @@ namespace socket.core.Server
             m_receiveBufferSize = receiveBufferSize;
             m_bufferManager = new BufferManager(receiveBufferSize * numConnections, receiveBufferSize);
             m_receivePool = new SocketAsyncEventArgsPool(numConnections);
-            m_sendPool = new SocketAsyncEventArgsPool(numConnections);
+            m_sendPool = new SocketAsyncEventArgsPool((Int32)(numConnections*1.5));
             m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
             Init();
         }
@@ -107,6 +107,10 @@ namespace socket.core.Server
                 //分配缓冲池中的字节缓冲区的socketasynceventarg对象
                 m_bufferManager.SetBuffer(saea_receive);
                 m_receivePool.Push(saea_receive);
+            }
+            //预先发送端数量是接收端的1.5倍。以防止异步阻塞时，发送端不够用
+            for (int i = 0; i < (int)(m_numConnections*1.5); i++)
+            {
                 //预先发送端分配一组可重用的消息
                 saea_send = new SocketAsyncEventArgs();
                 saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
@@ -375,7 +379,7 @@ namespace socket.core.Server
         }
 
         /// <summary>
-        /// 异常发送回调
+        /// 发送回调
         /// </summary>
         /// <param name="e"></param>
         private void ProcessSend(SocketAsyncEventArgs e)

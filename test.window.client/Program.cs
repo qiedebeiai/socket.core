@@ -13,7 +13,7 @@ namespace test.window.client
     {
         static void Main(string[] args)
         {
-            List<Push> listPush = new List<Push>();
+
             int port = int.Parse(ConfigurationSettings.AppSettings["port"]);
             string ip = ConfigurationSettings.AppSettings["ip"];
             int receiveBufferSize = int.Parse(ConfigurationSettings.AppSettings["receiveBufferSize"]);
@@ -21,28 +21,47 @@ namespace test.window.client
             int sendnumber = int.Parse(ConfigurationSettings.AppSettings["sendnumber"]);
             string senddata = ConfigurationSettings.AppSettings["senddata"];
             byte[] data = Encoding.UTF8.GetBytes(senddata);
+
+            List<Push> listPush = new List<Push>();
+            List<Pull> listPull = new List<Pull>();
+            List<Pack> listPack = new List<Pack>();
+
             for (int i = 0; i < number; i++)
             {
-                Push push = new Push(receiveBufferSize, ip, port);
-                listPush.Add(push);
+                //Push push = new Push(receiveBufferSize, ip, port);
+                //listPush.Add(push);
+
+                Pull pull = new Pull(receiveBufferSize, ip, port);
+                listPull.Add(pull);
+
+                //Pack pack = new Pack(receiveBufferSize, ip, port, 0x3ff);
+                //listPack.Add(pack);
+
                 Thread.Sleep(2);
             }
 
             for (int i = 0; i < sendnumber; i++)
             {
-                foreach (var item in listPush)
+                //foreach (var item in listPush)
+                foreach (var item in listPull)
+                //foreach (var item in listPack)
                 {
                     item.Send(data, 0, data.Length);
                     Thread.Sleep(1);
                 }
             }
 
-            foreach (var item in listPush)
+            Thread.Sleep(1000*20);
+            Console.WriteLine("发送已经完成！");
+            //foreach (var item in listPush)
+            foreach (var item in listPull)
+            //foreach (var item in listPack)
             {
                 item.Close();
             }
+            Console.WriteLine("客户端已完成");
 
-            Console.WriteLine("已完成");
+
             Console.Read();
         }
     }
