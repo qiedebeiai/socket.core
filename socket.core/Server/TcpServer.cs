@@ -71,7 +71,8 @@ namespace socket.core.Server
         /// 断开连接通知事件
         /// </summary>
         public event Action<Guid> OnClose;
-        public Semaphore semaphore;
+        
+
         /// <summary>
         /// 设置基本配置
         /// </summary>   
@@ -87,8 +88,7 @@ namespace socket.core.Server
             m_bufferManager = new BufferManager(receiveBufferSize * numConnections, receiveBufferSize);
             m_receivePool = new SocketAsyncEventArgsPool(numConnections);
             m_sendPool = new SocketAsyncEventArgsPool(numConnections);
-            m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
-            semaphore = new Semaphore(numConnections, numConnections);
+            m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);         
             Init();
         }
 
@@ -115,6 +115,7 @@ namespace socket.core.Server
                 m_receivePool.Push(saea_receive);
                 //预先发送端分配一组可重用的消息
                 saea_send = new SocketAsyncEventArgs();
+                saea_send.Completed+= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
                 saea_send.UserToken = new AsyncUserToken();
                 m_sendPool.Push(saea_send);
             }
@@ -386,20 +387,17 @@ namespace socket.core.Server
         /// <param name="length">长度</param>
         public void Send(Guid connectId, byte[] data, int offset, int length)
         {
-            //semaphore.WaitOne();
+            SocketAsyncEventArgs socketAsyncEventArgs = new SocketAsyncEventArgs();
             ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
-            if (connect != null)
+            AsyncUserToken token = (AsyncUserToken)connect.saea_send.UserToken;
+            socketAsyncEventArgs.SetBuffer(data, offset, length);
+            bool willRaiseEvent = token.Socket.SendAsync(socketAsyncEventArgs);
+            if (!willRaiseEvent)
             {
-                AsyncUserToken token = (AsyncUserToken)connect.saea_send.UserToken;
-                // 读取从客户端发送的下一个数据块
-                connect.saea_send.SetBuffer(data, offset, length);
-                bool willRaiseEvent = token.Socket.SendAsync(connect.saea_send);
-                if (!willRaiseEvent)
-                {
-                    ProcessSend(connect.saea_send);
-                }
+                ProcessSend(connect.saea_send);
             }
-            //semaphore.Release();
+            return;
+
         }
 
         /// <summary>
@@ -410,14 +408,27 @@ namespace socket.core.Server
         {
             if (e.SocketError == SocketError.Success)
             {
-                //完成将数据回传给客户端
                 AsyncUserToken token = (AsyncUserToken)e.UserToken;
-                // 读取从客户端发送的下一个数据块
-                bool willRaiseEvent = token.Socket.SendAsync(e);
-                if (!willRaiseEvent)
+                //mutex.ReleaseMutex();
+                e.AcceptSocket = null;
+                //清除之前发送sae的缓冲区以避免内存泄漏
+                if (e.Buffer != null)
                 {
-                    ProcessSend(e);
+                    e.SetBuffer(null, 0, 0);
                 }
+                else if (e.BufferList != null)
+                {
+                    e.BufferList = null;
+                }
+                //完成将数据回传给客户端
+                //AsyncUserToken token = (AsyncUserToken)e.UserToken;
+                //// 读取从客户端发送的下一个数据块
+                //bool willRaiseEvent = token.Socket.SendAsync(e);
+                //if (!willRaiseEvent)
+                //{
+                //    ProcessSend(e);
+                //}
+                
             }
             else
             {
