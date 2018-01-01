@@ -21,11 +21,7 @@ namespace socket.core.Common
         /// <summary>
         /// 接受端SocketAsyncEventArgs对象
         /// </summary>
-        public SocketAsyncEventArgs saea_receive { get; set; }
-        /// <summary>
-        /// 发送端SocketAsyncEventArgs对象
-        /// </summary>
-        //public SocketAsyncEventArgs saea_send { get; set; }
+        public SocketAsyncEventArgs saea_receive { get; set; }      
         /// <summary>
         /// 每隔10秒扫描次数,用于检查客户端是否存活
         /// </summary>
