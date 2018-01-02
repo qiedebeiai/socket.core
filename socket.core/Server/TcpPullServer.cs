@@ -104,7 +104,7 @@ namespace socket.core.Server
                     queue.Add(connectId, new List<byte>());
                 }
                 queue[connectId].AddRange(data);
-                OnReceive(connectId, queue.Count);
+                OnReceive(connectId, queue[connectId].Count);
             }
         }
 

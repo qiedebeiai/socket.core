@@ -51,7 +51,7 @@ namespace test.window.client
                 }
             }
 
-            Thread.Sleep(1000*20);
+            Thread.Sleep(1000*10);
             Console.WriteLine("发送已经完成！");
             //foreach (var item in listPush)
             foreach (var item in listPull)

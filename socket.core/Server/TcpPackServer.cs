@@ -178,7 +178,5 @@ namespace socket.core.Server
             queue[connectId].RemoveRange(0,len+4);
             return f;
         }
-
-
     }
 }
