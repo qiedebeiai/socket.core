@@ -81,7 +81,7 @@ namespace socket.core.Server
             m_receiveBufferSize = receiveBufferSize;
             m_bufferManager = new BufferManager(receiveBufferSize * numConnections, receiveBufferSize);
             m_receivePool = new SocketAsyncEventArgsPool(numConnections);
-            m_sendPool = new SocketAsyncEventArgsPool((Int32)(numConnections*1.5));
+            m_sendPool = new SocketAsyncEventArgsPool((Int32)(numConnections * 1.5));
             m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
             Init();
         }
@@ -109,7 +109,7 @@ namespace socket.core.Server
                 m_receivePool.Push(saea_receive);
             }
             //预先发送端数量是接收端的1.5倍。以防止异步阻塞时，发送端不够用
-            for (int i = 0; i < (int)(m_numConnections*1.5); i++)
+            for (int i = 0; i < (int)(m_numConnections * 1.5); i++)
             {
                 //预先发送端分配一组可重用的消息
                 saea_send = new SocketAsyncEventArgs();
@@ -280,11 +280,7 @@ namespace socket.core.Server
             {
                 return;
             }
-            try
-            {
-                CloseClientSocket(conn.saea_receive);
-            }
-            catch (Exception) { }
+            CloseClientSocket(conn.saea_receive);
         }
 
         #endregion

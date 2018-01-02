@@ -31,7 +31,10 @@ namespace socket.core.Client
         /// 接收到的数据缓存
         /// </summary>
         private  List<byte> queue;
-
+        /// <summary>
+        /// 互斥锁
+        /// </summary>
+        private Mutex mutex = new Mutex();
         /// <summary>
         /// 设置基本配置
         /// </summary>   
@@ -112,13 +115,15 @@ namespace socket.core.Client
         /// <param name="length"></param>
         /// <returns></returns>
         public byte[] Fetch(int length)
-        {            
+        {
+            mutex.WaitOne();
             if (length > queue.Count)
             {
                 length = queue.Count;
             }
             byte[] f = queue.Take(length).ToArray();
             queue.RemoveRange(0, length);
+            mutex.ReleaseMutex();
             return f;
         }        
 

@@ -32,7 +32,10 @@ namespace socket.core.Server
         /// 接收到的数据缓存
         /// </summary>
         private Dictionary<Guid, List<byte>> queue;
-
+        /// <summary>
+        /// 互斥锁
+        /// </summary>
+        private Mutex mutex = new Mutex();
         /// <summary>
         /// 设置基本配置
         /// </summary>   
@@ -126,7 +129,8 @@ namespace socket.core.Server
         /// <param name="length"></param>
         /// <returns></returns>
         public byte[] Fetch(Guid connectId, int length)
-        {
+        {           
+            mutex.WaitOne();            
             if (!queue.ContainsKey(connectId))
             {
                 return new byte[] { };
@@ -137,7 +141,8 @@ namespace socket.core.Server
             }
             byte[] f = queue[connectId].Take(length).ToArray();
             queue[connectId].RemoveRange(0, length);
-            return f;
+            mutex.ReleaseMutex();
+            return f;            
         }        
 
         /// <summary>
