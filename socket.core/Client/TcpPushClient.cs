@@ -8,7 +8,7 @@ using System.Threading;
 namespace socket.core.Client
 {
     /// <summary>
-    /// push 
+    /// push 推出数据
     /// </summary>
     public class TcpPushClient
     {

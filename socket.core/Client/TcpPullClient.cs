@@ -7,7 +7,7 @@ using System.Threading;
 namespace socket.core.Client
 {
     /// <summary>
-    /// pull 组件接收到数据时会触发监听事件对象OnReceive(pSender,dwConnID,iTotalLength)，告诉应用程序当前已经接收到了多少数据，应用程序检查数据的长度，如果满足则调用组件的Fetch(dwConnID,pData,iDataLength)方法，把需要的数据“拉”出来
+    /// Pull 拉出数据
     /// </summary>
     public class TcpPullClient
     {

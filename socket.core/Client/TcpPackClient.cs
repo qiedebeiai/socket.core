@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace socket.core.Client
 {
+    /// <summary>
+    /// 推和拉组合体，自带分包处理机制
+    /// </summary>
     public class TcpPackClient
     {
         /// <summary>
@@ -31,13 +34,13 @@ namespace socket.core.Client
         /// <summary>
         /// 包头标记
         /// </summary>
-        private int headerFlag;
+        private uint headerFlag;
         /// <summary>
         /// 设置基本配置
         /// </summary>   
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>
         /// <param name="headerFlag">包头标记范围0~1023(0x3FF),当包头标识等于0时，不校验包头</param>
-        public TcpPackClient( int receiveBufferSize,int headerFlag)
+        public TcpPackClient( int receiveBufferSize,uint headerFlag)
         {
             if(headerFlag<0|| headerFlag>1023)
             {
@@ -133,8 +136,8 @@ namespace socket.core.Client
         /// <returns></returns>
         private byte[] AddHead(byte[] data)
         {
-            int len = data.Length;
-            int header = (headerFlag << 22) | len;
+            uint len =(uint)data.Length;
+            uint header = (headerFlag << 22) | len;
             byte[] head=System.BitConverter.GetBytes(header);
             return head.Concat(data).ToArray();           
         }
@@ -145,21 +148,19 @@ namespace socket.core.Client
         /// <returns></returns>
         private byte[] Read()
         {
-            int header=BitConverter.ToInt32(queue.ToArray(), 0);        
-            if(headerFlag!= (header >> 22))
+            uint header = BitConverter.ToUInt32(queue.ToArray(), 0);
+            if (headerFlag != (header >> 22))
             {
                 return null;
             }
-            int len = header & 0x3fffff;
-            if (len > queue.Count-4)
+            uint len = header & 0x3fffff;
+            if (len > queue.Count - 4)
             {
                 return null;
             }
-            byte[] f = queue.Skip(4).Take(len).ToArray();
-            queue.RemoveRange(0,len+4);
+            byte[] f = queue.Skip(4).Take((int)len).ToArray();
+            queue.RemoveRange(0, (int)len + 4);
             return f;
         }
-
-
     }
 }

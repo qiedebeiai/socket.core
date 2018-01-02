@@ -18,7 +18,7 @@ namespace test.window.server.Server
         /// <param name="overtime">超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时</param>
         /// <param name="port">端口</param>
         /// <param name="headerFlag">包头</param>
-        public Pack(int numConnections, int receiveBufferSize, int overtime,int port,int headerFlag)
+        public Pack(int numConnections, int receiveBufferSize, int overtime,int port,uint headerFlag)
         {
             server = new TcpPackServer(numConnections, receiveBufferSize, overtime, headerFlag);
             server.OnAccept += Server_OnAccept;

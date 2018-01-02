@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace socket.core.Server
 {
+    /// <summary>
+    /// 推和拉组合体，自带分包处理机制
+    /// </summary>
     public class TcpPackServer
     {
         /// <summary>
@@ -31,7 +34,7 @@ namespace socket.core.Server
         /// <summary>
         /// 包头标记
         /// </summary>
-        private int headerFlag;
+        private uint headerFlag;
         /// <summary>
         /// 设置基本配置
         /// </summary>   
@@ -39,7 +42,7 @@ namespace socket.core.Server
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>
         /// <param name="overtime">超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时</param>
         /// <param name="headerFlag">包头标记范围0~1023(0x3FF),当包头标识等于0时，不校验包头</param>
-        public TcpPackServer(int numConnections, int receiveBufferSize, int overtime,int headerFlag)
+        public TcpPackServer(int numConnections, int receiveBufferSize, int overtime,uint headerFlag)
         {
             if(headerFlag<0|| headerFlag>1023)
             {
@@ -147,8 +150,8 @@ namespace socket.core.Server
         /// <returns></returns>
         private byte[] AddHead(byte[] data)
         {
-            int len = data.Length;
-            int header = (headerFlag << 22) | len;
+            uint len = (uint)data.Length;
+            uint header = (headerFlag << 22) | len;
             byte[] head=System.BitConverter.GetBytes(header);
             return head.Concat(data).ToArray();           
         }
@@ -164,18 +167,18 @@ namespace socket.core.Server
                 return null;
             }
             List<byte> data = queue[connectId];
-            int header=BitConverter.ToInt32(data.ToArray(), 0);        
+            uint header=BitConverter.ToUInt32(data.ToArray(), 0);        
             if(headerFlag!= (header >> 22))
             {
                 return null;
             }
-            int len = header & 0x3fffff;
+            uint len = header & 0x3fffff;
             if (len > data.Count-4)
             {
                 return null;
             }
-            byte[] f = data.Skip(4).Take(len).ToArray();
-            queue[connectId].RemoveRange(0,len+4);
+            byte[] f = data.Skip(4).Take((int)len).ToArray();
+            queue[connectId].RemoveRange(0,(int)len+4);
             return f;
         }
     }

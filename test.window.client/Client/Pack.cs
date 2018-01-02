@@ -12,7 +12,7 @@ namespace test.window.client.Client
     public class Pack
     {
         TcpPackClient client;
-        public Pack(int receiveBufferSize, string ip, int port,int headerFlag)
+        public Pack(int receiveBufferSize, string ip, int port,uint headerFlag)
         {
             client = new TcpPackClient(receiveBufferSize, headerFlag);
             client.OnAccept += Client_OnAccept;
