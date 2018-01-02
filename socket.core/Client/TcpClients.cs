@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace socket.core.Client
 {
@@ -43,7 +44,10 @@ namespace socket.core.Client
         /// 断开连接通知事件
         /// </summary>
         public event Action OnClose;
-
+        /// <summary>
+        /// 互斥锁
+        /// </summary>
+        private Mutex mutex = new Mutex();
         /// <summary>
         /// 设置基本配置
         /// </summary>
@@ -126,6 +130,11 @@ namespace socket.core.Client
         /// <param name="length">长度</param>
         public void Send(byte[] data, int offset, int length)
         {
+            mutex.WaitOne();
+            if(sendSocketAsyncEventArgs==null)
+            {
+                sendSocketAsyncEventArgs = new SocketAsyncEventArgs();
+            }
             if (sendSocketAsyncEventArgs.BytesTransferred == 0)
             {
                 sendSocketAsyncEventArgs.SetBuffer(data, offset, length);
@@ -144,6 +153,7 @@ namespace socket.core.Client
                     ReadSocketAsyncEventArgs_Completed(null, saea);
                 }
             }
+            mutex.ReleaseMutex();
         }
 
         /// <summary>

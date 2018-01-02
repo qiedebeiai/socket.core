@@ -34,7 +34,7 @@ namespace test.window.client
                 //Pull pull = new Pull(receiveBufferSize, ip, port);
                 //listPull.Add(pull);
 
-                Pack pack = new Pack(receiveBufferSize, ip, port, 0x3ff);
+                Pack pack = new Pack(receiveBufferSize, ip, port, 0xff);
                 listPack.Add(pack);
 
                 Thread.Sleep(2);

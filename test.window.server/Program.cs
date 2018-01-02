@@ -19,7 +19,7 @@ namespace test.window.server
 
             //Push push = new Push(numConnections, receiveBufferSize, overtime, port);
             //Pull pull = new Pull(numConnections, receiveBufferSize, overtime, port);
-            Pack pack = new Pack(numConnections, receiveBufferSize, overtime, port,0x3ff);
+            Pack pack = new Pack(numConnections, receiveBufferSize, overtime, port, 0xff);
             Console.WriteLine("服务端已准备好!");
             Console.Read();
         }
