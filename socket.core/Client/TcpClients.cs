@@ -130,11 +130,7 @@ namespace socket.core.Client
         /// <param name="length">长度</param>
         public void Send(byte[] data, int offset, int length)
         {
-            mutex.WaitOne();
-            if(sendSocketAsyncEventArgs==null)
-            {
-                sendSocketAsyncEventArgs = new SocketAsyncEventArgs();
-            }
+            mutex.WaitOne();           
             if (sendSocketAsyncEventArgs.BytesTransferred == 0)
             {
                 sendSocketAsyncEventArgs.SetBuffer(data, offset, length);
