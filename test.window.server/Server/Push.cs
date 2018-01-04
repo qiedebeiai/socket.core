@@ -31,6 +31,7 @@ namespace test.window.server.Server
 
         private void Server_OnClose(Guid obj)
         {
+            int aaa = server.GetAttached(obj);
             Console.WriteLine($"Push断开{obj}");
         }
 

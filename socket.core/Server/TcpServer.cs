@@ -259,12 +259,12 @@ namespace socket.core.Server
                 m_receivePool.Push(e);
                 ConnectClient conn = connectClient.FirstOrDefault(P => P.saea_receive == e);
                 if (conn != null)
-                {
-                    connectClient.TryTake(out conn);
+                {                    
                     if (OnClose != null)
                     {
                         OnClose(conn.connectId);
                     }
+                    connectClient.TryTake(out conn);
                 }
             }
         }
