@@ -391,6 +391,42 @@ namespace socket.core.Server
         }
 
         #endregion
+
+        /// <summary>
+        /// 给连接对象设置附加数据
+        /// </summary>
+        /// <param name="connectId">连接标识</param>
+        /// <param name="data">附加数据</param>
+        /// <returns>true:设置成功,false:设置失败</returns>
+        public bool SetAttached(Guid connectId, dynamic data)
+        {
+            ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
+            if(connect==null)
+            {
+                return false;
+            }
+            connect.attached = data;
+            return true;
+        }
+
+        /// <summary>
+        /// 获取连接对象的附加数据
+        /// </summary>
+        /// <param name="connectId">连接标识</param>
+        /// <returns>附加数据，如果没有找到则返回null</returns>
+        public dynamic GetAttached(Guid connectId)
+        {
+            ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
+            if (connect == null)
+            {
+                return null;
+            }
+            else
+            {
+                return connect.attached;
+            }
+        }
+
     }
 
 }

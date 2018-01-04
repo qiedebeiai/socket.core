@@ -8,7 +8,7 @@ namespace socket.core.Common
     /// <summary>
     /// 已经连接的客户端
     /// </summary>
-    class ConnectClient
+    public class ConnectClient
     {
         /// <summary>
         /// 连接ID
@@ -26,5 +26,9 @@ namespace socket.core.Common
         /// 每隔10秒扫描次数,用于检查客户端是否存活
         /// </summary>
         public int keep_alive { get; set; }
+        /// <summary>
+        /// 附加数据
+        /// </summary>
+        public dynamic attached { get; set; }
     }
 }

@@ -1,8 +1,9 @@
 ﻿socket.core
 ===
-
 This is a socket framework written based on C # standard, the interface design is simple, separate thread operation, does not affect the caller. Can be used in the net Framework 4.x.x / standard assembly, in the window (IOCP) / linux normal operation.
 ---
+
+下面有中文文档     
 
 Install NuGet:   
 Package Manager: Install-Package socket.core   
@@ -18,7 +19,8 @@ Note: connectId (guid) represents a connection object, data (byte []), success (
     
 * 1. Initialize socket (corresponding to the three modes)  
 > Instantiate the server class TcpPushServer / TcpPullServer / TcpPackServer  
-> Instantiate the client class TcpPushClient / TcpPullClient / TcpPackClient  
+> Instantiate the client class TcpPushClient / TcpPullClient / TcpPackClient 
+> Parameter introduction int numConnections maximum number of simultaneous connections, int receiveBufferSize buffer size (sink) for each socket I / O operation, int overtime timeout period in seconds (check every 10 seconds), When the value is 0, do not set the timeout, uint headerFlag Header tag range 0 ~ 1023 (0x3FF), when the header identifier is equal to 0, do not check the header     
 * 2. Start monitoring / connecting server  
 > Server server.Start (port);  
 > Client client.Connect (ip, port);  
@@ -51,15 +53,18 @@ PACK header format
 XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY  
 The first 10 X bits are the header identification bits, which are used for data packet verification. The effective header identification value ranges from 0 to 1023 (0x3FF). When the header identification equals 0, the header is not checked. The last 22 bits of Y are length bits. Package length. The maximum valid packet length can not exceed 4194303 (0x3FFFFF) bytes (bytes), the application can be set by the TcpPackServer / TcpPackClient constructor parameter headerFlag  
 
+Other methods introduced   
+* 1. bool SetAttached <T> (Guid connectId, T data)   
+> The server sets additional data for each client to prevent the user from establishing the user mapping table   
+* 2. dynamic GetAttached (Guid connectId)   
+> Get additional data for the specified client   
 2017/12/27  
-
 
 socket.core 
 ===
 
 这是一个基于C# standard 写的socket框架，接口设计简单，单独线程运行,不影响调用方。可使用于net Framework 4.x.x/standard程序集，能在window(IOCP)/linux正常运行.
 ---
-
 安装NuGet:  
 Package Manager: Install-Package socket.core   
 .Net CLI :dotnet add package socket.core      
@@ -72,8 +77,9 @@ Paket CLI:paket add socket.core
 注:connectId(guid)代表着一个连接对象,data(byte[]),success(bool)   
   
 * 1.初始化socket(对应的三种模式)    
-	>实例化服务端类 TcpPushServer/TcpPullServer/TcpPackServer     
+	>实例化服务端类 TcpPushServer/TcpPullServer/TcpPackServer        
 	>实例化客户端类 TcpPushClient/TcpPullClient/TcpPackClient    
+	>参数介绍int numConnections同时处理的最大连接数,int receiveBufferSize用于每个套接字I/O操作的缓冲区大小(接收端), int overtime超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时,uint headerFlag包头标记范围0~1023(0x3FF),当包头标识等于0时，不校验包头    
 * 2.启动监听/连接服务器   
 	>服务端 server.Start(port);   
 	>客户端 client.Connect(ip,port);   
@@ -93,7 +99,6 @@ Paket CLI:paket add socket.core
 	>服务端 server.OnClose(connectId);   
 	>客户端 client.OnClose();    
 
-
 三种模型简介   
 * 一:push   
     >会触发监听事件对象OnReceive(connectId,data);把数据立马“推”给应用程序  
@@ -104,8 +109,13 @@ Paket CLI:paket add socket.core
 	注：pack模型组件会对应用程序发送的每个数据包自动加上4个字节(32位)的包头，组件接收到数据时，根据包头信息自动分包，每个完整的数据包通过OnReceive事件发送给应用程序   
 	PACK包头格式   
 	XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY   
-	前10位X为包头标识位，用于数据包校验，有效包头标识取值范围0~1023(0x3FF),当包头标识等于0时，不校验包头，后22位Y为长度位，记录包体长度。有效数据包最大长度不能超过4194303（0x3FFFFF）字节(byte),应用程序可以通过TcpPackServer/TcpPackClient构造函数参数headerFlag设置    
-	  
-	    
+	前10位X为包头标识位，用于数据包校验，有效包头标识取值范围0~1023(0x3FF),当包头标识等于0时，不校验包头，后22位Y为长度位，记录包体长度。有效数据包最大长度不能超过4194303（0x3FFFFF）字节(byte),应用程序可以通过TcpPackServer/TcpPackClient构造函数参数headerFlag设置
+
+其它方法介绍   
+* 1. bool SetAttached<T>(Guid connectId, T data)  
+	>服务端为每个客户端设置附加数据，避免用户自己再建立用户映射表   
+* 2. dynamic GetAttached(Guid connectId)   
+	>获取指定客户端的附加数据   
+   
 	  
 	2017/12/27

@@ -12,9 +12,9 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>socket Async Cache Pool C# core socket.core</PackageTags>
     <Copyright>fengma_312@163.com</Copyright>
-    <PackageReleaseNotes>socket.core</PackageReleaseNotes>
+    <PackageReleaseNotes>服务端中。可以增加连接对象附加数据，避免调用方再需要建立映射表</PackageReleaseNotes>
     <RepositoryType>socket.core</RepositoryType>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
   </PropertyGroup>
 
 </Project>

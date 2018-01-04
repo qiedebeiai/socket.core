@@ -1,4 +1,6 @@
-﻿using System;
+﻿using socket.core.Common;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,6 +37,21 @@ namespace socket.core.Server
         /// 包头标记
         /// </summary>
         private uint headerFlag;
+        /// <summary>
+        /// 连接状态下的客户端列表
+        /// </summary>
+        public ConcurrentBag<ConnectClient> ConnectClient
+        {
+            get
+            {
+                if (tcpServer == null)
+                {
+                    return null;
+                }
+                return tcpServer.connectClient;
+            }
+        }
+
         /// <summary>
         /// 设置基本配置
         /// </summary>   
@@ -181,5 +198,27 @@ namespace socket.core.Server
             queue[connectId].RemoveRange(0,(int)len+4);
             return f;
         }
+
+        /// <summary>
+        /// 给连接对象设置附加数据
+        /// </summary>
+        /// <param name="connectId">连接标识</param>
+        /// <param name="data">附加数据</param>
+        /// <returns>true:设置成功,false:设置失败</returns>
+        public bool SetAttached<T>(Guid connectId, T data)
+        {
+            return tcpServer.SetAttached(connectId, data);
+        }
+
+        /// <summary>
+        /// 获取连接对象的附加数据
+        /// </summary>
+        /// <param name="connectId">连接标识</param>
+        /// <returns>附加数据，如果没有找到则返回null</returns>
+        public dynamic GetAttached(Guid connectId)
+        {
+            return tcpServer.GetAttached(connectId);
+        }
+
     }
 }

@@ -31,11 +31,11 @@ namespace test.window.client
                 //Push push = new Push(receiveBufferSize, ip, port);
                 //listPush.Add(push);
 
-                //Pull pull = new Pull(receiveBufferSize, ip, port);
-                //listPull.Add(pull);
+                Pull pull = new Pull(receiveBufferSize, ip, port);
+                listPull.Add(pull);
 
-                Pack pack = new Pack(receiveBufferSize, ip, port, 0xff);
-                listPack.Add(pack);
+                //Pack pack = new Pack(receiveBufferSize, ip, port, 0xff);
+                //listPack.Add(pack);
 
                 Thread.Sleep(2);
             }
@@ -43,19 +43,19 @@ namespace test.window.client
             for (int i = 0; i < sendnumber; i++)
             {
                 //foreach (var item in listPush)
-                //foreach (var item in listPull)
-                foreach (var item in listPack)
+                foreach (var item in listPull)
+                //foreach (var item in listPack)
                 {
                     item.Send(data, 0, data.Length);
                     Thread.Sleep(1);
                 }
             }
 
-            Thread.Sleep(1000*10);
+            Thread.Sleep(1000*1);
             Console.WriteLine("发送已经完成！");
             //foreach (var item in listPush)
-            //foreach (var item in listPull)
-            foreach (var item in listPack)
+            foreach (var item in listPull)
+            //foreach (var item in listPack)
             {
                 item.Close();
             }

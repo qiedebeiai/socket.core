@@ -36,6 +36,7 @@ namespace test.window.server.Server
 
         private void Server_OnReceive(Guid arg1, byte[] arg2)
         {
+            int aaa=server.GetAttached(arg1);
             Console.WriteLine($"Push接收 byte[{arg2.Length}]");
             server.Send(arg1, arg2, 0, arg2.Length);
             Console.WriteLine($"Push发送 byte[{arg2.Length}]");
@@ -43,6 +44,7 @@ namespace test.window.server.Server
 
         private void Server_OnAccept(Guid obj)
         {
+            server.SetAttached<int>(obj,555);
             Console.WriteLine($"Push连接{obj}");           
         }
     }
