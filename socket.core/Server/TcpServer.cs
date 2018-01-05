@@ -122,7 +122,7 @@ namespace socket.core.Server
         /// <summary>
         /// 启动tcp服务侦听
         /// </summary>       
-        /// <param name="port">端口</param>
+        /// <param name="port">监听端口</param>
         public void Start(int port)
         {
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
@@ -197,7 +197,7 @@ namespace socket.core.Server
         /// <summary>
         /// 当异步连接完成时调用此方法
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void ProcessAccept(SocketAsyncEventArgs e)
         {
             //从接受端重用池获取一个新的SocketAsyncEventArgs对象
@@ -227,7 +227,7 @@ namespace socket.core.Server
         /// 这种方法与socket.acceptasync回调方法操作，并在接受操作完成时调用。
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void AcceptEventArg_Completed(object sender, SocketAsyncEventArgs e)
         {
             ProcessAccept(e);
@@ -236,7 +236,7 @@ namespace socket.core.Server
         /// <summary>
         /// 客户端断开一个连接
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         protected void CloseClientSocket(SocketAsyncEventArgs e)
         {
             AsyncUserToken token = e.UserToken as AsyncUserToken;
@@ -272,7 +272,7 @@ namespace socket.core.Server
         /// <summary>
         /// 客户端断开一个连接
         /// </summary>
-        /// <param name="connectId"></param>
+        /// <param name="connectId">连接标记</param>
         public void Close(Guid connectId)
         {
             ConnectClient conn = connectClient.FirstOrDefault(P => P.connectId == connectId);
@@ -311,7 +311,7 @@ namespace socket.core.Server
         /// <summary>
         /// 接受处理回调
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
             //检查远程主机是否关闭连接
@@ -377,7 +377,7 @@ namespace socket.core.Server
         /// <summary>
         /// 发送回调
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void ProcessSend(SocketAsyncEventArgs e)
         {
             if (e.SocketError == SocketError.Success)

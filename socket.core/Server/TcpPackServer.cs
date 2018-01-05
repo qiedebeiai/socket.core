@@ -80,7 +80,7 @@ namespace socket.core.Server
         /// <summary>
         /// 开启监听服务
         /// </summary>        
-        /// <param name="port"></param>
+        /// <param name="port">监听端口</param>
         public void Start(int port)
         {
             while (tcpServer == null)
@@ -93,7 +93,7 @@ namespace socket.core.Server
         /// <summary>
         /// 连接成功事件方法
         /// </summary>
-        /// <param name="connectId"></param>
+        /// <param name="connectId">连接标记</param>
         private void TcpServer_eventactionAccept(Guid connectId)
         {
             if (OnAccept != null)
@@ -116,8 +116,8 @@ namespace socket.core.Server
         /// <summary>
         /// 接收通知事件方法
         /// </summary>
-        /// <param name="connectId"></param>
-        /// <param name="data"></param>
+        /// <param name="connectId">连接标记</param>
+        /// <param name="data">数据</param>
         private void TcpServer_eventactionReceive(Guid connectId, byte[] data)
         {
             if (OnReceive != null)
@@ -147,7 +147,7 @@ namespace socket.core.Server
         /// <summary>
         /// 断开连接通知事件方法
         /// </summary>
-        /// <param name="connectId"></param>
+        /// <param name="connectId">连接标记</param>
         private void TcpServer_eventClose(Guid connectId)
         {
             if (queue.ContainsKey(connectId))
@@ -160,10 +160,8 @@ namespace socket.core.Server
 
         /// <summary>
         /// 在数据起始位置增加4字节包头
-        /// </summary>
-        /// <param name="headflag"></param>
-        /// <param name="length"></param>
-        /// <param name="data"></param>
+        /// </summary>     
+        /// <param name="data">数据</param>
         /// <returns></returns>
         private byte[] AddHead(byte[] data)
         {
@@ -176,6 +174,7 @@ namespace socket.core.Server
         /// <summary>
         /// 读取数据
         /// </summary>
+        /// <param name="connectId">连接标记</param>
         /// <returns></returns>
         private byte[] Read(Guid connectId)
         {

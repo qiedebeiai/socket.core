@@ -112,7 +112,7 @@ namespace socket.core.Client
         /// <summary>
         /// 取出指定长度数据
         /// </summary>
-        /// <param name="length"></param>
+        /// <param name="length">获取长度</param>
         /// <returns></returns>
         public byte[] Fetch(int length)
         {

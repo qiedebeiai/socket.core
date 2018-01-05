@@ -12,6 +12,9 @@ namespace socket.core.Common
     /// </summary>
     class SocketAsyncEventArgsPool
     {
+        /// <summary>
+        /// 重用池原数据
+        /// </summary>
         Stack<SocketAsyncEventArgs> m_pool;
         
         /// <summary>

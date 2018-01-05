@@ -70,7 +70,7 @@ namespace socket.core.Client
         /// 连接服务器
         /// </summary>
         /// <param name="ip">ip地址或域名</param>
-        /// <param name="port">端口</param>
+        /// <param name="port">连接端口</param>
         public void Connect(string ip, int port)
         {
             IPAddress ipaddr;
@@ -97,7 +97,7 @@ namespace socket.core.Client
         /// 连接回调事件
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void ConnSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
         {
             if (e.SocketError == SocketError.Success)
@@ -156,7 +156,7 @@ namespace socket.core.Client
         /// 发送回调
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void ReadSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
         {
         }
@@ -165,7 +165,7 @@ namespace socket.core.Client
         /// 接受回调
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void ReceiveSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
         {
             if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
@@ -191,7 +191,7 @@ namespace socket.core.Client
         /// <summary>
         /// 客户端断开一个连接
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         protected void CloseClientSocket(SocketAsyncEventArgs e)
         {
             if (socket.Connected)

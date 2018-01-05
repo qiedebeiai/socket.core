@@ -5,8 +5,14 @@ using System.Text;
 
 namespace socket.core.Common
 {
+    /// <summary>
+    /// Token
+    /// </summary>
     internal class AsyncUserToken
     {
+        /// <summary>
+        /// 所使用的套接字
+        /// </summary>
         public Socket Socket { get; set; }
     }
 }

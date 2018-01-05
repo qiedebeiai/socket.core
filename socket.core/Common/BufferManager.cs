@@ -25,7 +25,7 @@ namespace socket.core.Common
         int m_bufferSize;
 
         /// <summary>
-        /// 
+        /// 初始化缓存
         /// </summary>
         /// <param name="totalBytes">缓存区总大小</param>
         /// <param name="bufferSize">缓存大小</param>
@@ -72,7 +72,7 @@ namespace socket.core.Common
         /// <summary>
         /// 从SocketAsyncEventArg对象中删除缓冲区。这将缓冲区释放回缓冲池
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="args">操作对象</param>
         public void FreeBuffer(SocketAsyncEventArgs args)
         {
             m_freeIndexPool.Push(args.Offset);

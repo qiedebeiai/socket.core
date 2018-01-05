@@ -97,7 +97,7 @@ namespace socket.core.Client
         /// <summary>
         /// 接收通知事件方法
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">数据</param>
         private void TcpServer_eventactionReceive( byte[] data)
         {
             if (OnReceive != null)
@@ -132,7 +132,7 @@ namespace socket.core.Client
         /// <summary>
         /// 在数据起始位置增加4字节包头
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">数据</param>
         /// <returns></returns>
         private byte[] AddHead(byte[] data)
         {
