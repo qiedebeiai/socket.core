@@ -101,12 +101,12 @@ Paket CLI:paket add socket.core
 
 三种模型简介   
 * 一:push   
-    >会触发监听事件对象OnReceive(connectId,data);把数据立马“推”给应用程序  
+    >当接收到数据时会触发监听事件OnReceive(connectId,data);把数据立马“推”给应用程序  
 * 二:pull   
-    >到数据时会触发监听事件对象OnReceive(connectId,length)，告诉应用程序当前已经接收到了多少数据，应用程序检查数据的长度，如果满足则调用组件的Fetch(connectId,length)方法，把需要的数据“拉”出来  
+    >当接收到数据时会触发监听事件OnReceive(connectId,length)，告诉应用程序当前已经接收到了多少数据长度，应用程序可使用GetLength(connectId)方法检查已接收的数据的长度，如果满足则调用组件的Fetch(connectId,length)方法，把需要的数据“拉”出来  
 * 三:pack   
     >pack模型组件是push和pull模型的结合体，应用程序不必要处理分包/合包，组件保证每个server.OnReceive(connectId,data)/client.OnReceive(data)事件都向应用程序提供一个完整的数据包   
-	注：pack模型组件会对应用程序发送的每个数据包自动加上4个字节(32位)的包头，组件接收到数据时，根据包头信息自动分包，每个完整的数据包通过OnReceive事件发送给应用程序   
+	注：pack模型组件会对应用程序发送的每个数据包自动加上4个字节(32bit)的包头，组件接收到数据时，根据包头信息自动分包，每个完整的数据包通过OnReceive(connectId, data)事件发送给应用程序   
 	PACK包头格式   
 	XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY   
 	前10位X为包头标识位，用于数据包校验，有效包头标识取值范围0~1023(0x3FF),当包头标识等于0时，不校验包头，后22位Y为长度位，记录包体长度。有效数据包最大长度不能超过4194303（0x3FFFFF）字节(byte),应用程序可以通过TcpPackServer/TcpPackClient构造函数参数headerFlag设置
@@ -116,6 +116,8 @@ Paket CLI:paket add socket.core
 	>服务端为每个客户端设置附加数据，避免用户自己再建立用户映射表   
 * 2. dynamic GetAttached(Guid connectId)   
 	>获取指定客户端的附加数据   
+
+    强烈建议在处理事件方法时，使用异步/线程或消息队列处理，减少处理时间，以免影响框架性能          
    
 	  
 	2017/12/27
