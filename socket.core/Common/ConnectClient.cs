@@ -17,15 +17,15 @@ namespace socket.core.Common
         /// <summary>
         /// 套接字
         /// </summary>
-        public Socket socket{get;set;}
+        internal Socket socket{get;set;}
         /// <summary>
         /// 接受端SocketAsyncEventArgs对象
         /// </summary>
-        public SocketAsyncEventArgs saea_receive { get; set; }      
+        internal SocketAsyncEventArgs saea_receive { get; set; }
         /// <summary>
         /// 每隔10秒扫描次数,用于检查客户端是否存活
         /// </summary>
-        public int keep_alive { get; set; }
+        internal int keep_alive { get; set; }
         /// <summary>
         /// 附加数据
         /// </summary>

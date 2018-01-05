@@ -10,7 +10,7 @@ namespace socket.core.Client
     /// <summary>
     /// 客户端基础类
     /// </summary>
-    public class TcpClients
+    internal class TcpClients
     {
         /// <summary>
         /// 套接字
@@ -35,15 +35,15 @@ namespace socket.core.Client
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        public event Action<bool> OnAccept;
+        internal event Action<bool> OnAccept;
         /// <summary>
         /// 接收通知事件
         /// </summary>
-        public event Action<byte[]> OnReceive;
+        internal event Action<byte[]> OnReceive;
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
-        public event Action OnClose;
+        internal event Action OnClose;
         /// <summary>
         /// 互斥锁
         /// </summary>
@@ -52,7 +52,7 @@ namespace socket.core.Client
         /// 设置基本配置
         /// </summary>
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>
-        public TcpClients(int receiveBufferSize)
+        internal TcpClients(int receiveBufferSize)
         {
             m_receiveBufferSize = receiveBufferSize;
             Init();
@@ -71,7 +71,7 @@ namespace socket.core.Client
         /// </summary>
         /// <param name="ip">ip地址或域名</param>
         /// <param name="port">连接端口</param>
-        public void Connect(string ip, int port)
+        internal void Connect(string ip, int port)
         {
             IPAddress ipaddr;
             if (!IPAddress.TryParse(ip, out ipaddr))
@@ -128,7 +128,7 @@ namespace socket.core.Client
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        public void Send(byte[] data, int offset, int length)
+        internal void Send(byte[] data, int offset, int length)
         {
             mutex.WaitOne();           
             if (sendSocketAsyncEventArgs.BytesTransferred == 0)
@@ -192,7 +192,7 @@ namespace socket.core.Client
         /// 客户端断开一个连接
         /// </summary>
         /// <param name="e">操作对象</param>
-        protected void CloseClientSocket(SocketAsyncEventArgs e)
+        private void CloseClientSocket(SocketAsyncEventArgs e)
         {
             if (socket.Connected)
             {
@@ -215,7 +215,7 @@ namespace socket.core.Client
         /// <summary>
         /// 客户端主动关闭连接
         /// </summary>
-        public void Close()
+        internal void Close()
         {
             CloseClientSocket(receiveSocketAsyncEventArgs);
         }

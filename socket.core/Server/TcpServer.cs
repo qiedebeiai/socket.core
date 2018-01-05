@@ -46,27 +46,27 @@ namespace socket.core.Server
         /// <summary>
         /// 超时检查间隔时间(秒)
         /// </summary>
-        public int overtimecheck = 10;
+        private int overtimecheck = 10;
         /// <summary>
         /// 能接到最多客户端个数的原子操作
         /// </summary>
-        public Semaphore m_maxNumberAcceptedClients;
+        private Semaphore m_maxNumberAcceptedClients;
         /// <summary>
         /// 已经连接的对象池
         /// </summary>
-        public ConcurrentBag<ConnectClient> connectClient;
+        internal ConcurrentBag<ConnectClient> connectClient;
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        public event Action<Guid> OnAccept;
+        internal event Action<Guid> OnAccept;
         /// <summary>
         /// 接收通知事件
         /// </summary>
-        public event Action<Guid, byte[]> OnReceive;
+        internal event Action<Guid, byte[]> OnReceive;
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
-        public event Action<Guid> OnClose;
+        internal event Action<Guid> OnClose;
 
         /// <summary>
         /// 设置基本配置
@@ -123,7 +123,7 @@ namespace socket.core.Server
         /// 启动tcp服务侦听
         /// </summary>       
         /// <param name="port">监听端口</param>
-        public void Start(int port)
+        internal void Start(int port)
         {
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
             //创建listens是传入的连接插座。
@@ -237,7 +237,7 @@ namespace socket.core.Server
         /// 客户端断开一个连接
         /// </summary>
         /// <param name="e">操作对象</param>
-        protected void CloseClientSocket(SocketAsyncEventArgs e)
+        private void CloseClientSocket(SocketAsyncEventArgs e)
         {
             AsyncUserToken token = e.UserToken as AsyncUserToken;
             if (!token.Socket.Connected)
@@ -273,7 +273,7 @@ namespace socket.core.Server
         /// 客户端断开一个连接
         /// </summary>
         /// <param name="connectId">连接标记</param>
-        public void Close(Guid connectId)
+        internal void Close(Guid connectId)
         {
             ConnectClient conn = connectClient.FirstOrDefault(P => P.connectId == connectId);
             if (conn == null)
@@ -362,7 +362,7 @@ namespace socket.core.Server
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        public void Send(Guid connectId, byte[] data, int offset, int length)
+        internal void Send(Guid connectId, byte[] data, int offset, int length)
         {
             ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
             SocketAsyncEventArgs sendEventArgs = m_sendPool.Pop();
@@ -398,7 +398,7 @@ namespace socket.core.Server
         /// <param name="connectId">连接标识</param>
         /// <param name="data">附加数据</param>
         /// <returns>true:设置成功,false:设置失败</returns>
-        public bool SetAttached(Guid connectId, dynamic data)
+        internal bool SetAttached(Guid connectId, dynamic data)
         {
             ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
             if(connect==null)
@@ -414,7 +414,7 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标识</param>
         /// <returns>附加数据，如果没有找到则返回null</returns>
-        public dynamic GetAttached(Guid connectId)
+        internal dynamic GetAttached(Guid connectId)
         {
             ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
             if (connect == null)

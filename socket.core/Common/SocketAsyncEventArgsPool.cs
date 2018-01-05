@@ -10,22 +10,21 @@ namespace socket.core.Common
     /// <summary>
     /// 表示可重用的SocketAsyncEventArgs对象的集合。
     /// </summary>
-    class SocketAsyncEventArgsPool
+    internal class SocketAsyncEventArgsPool
     {
         /// <summary>
         /// 重用池原数据
         /// </summary>
-        Stack<SocketAsyncEventArgs> m_pool;
-        
+        private Stack<SocketAsyncEventArgs> m_pool;
+
         /// <summary>
         /// 将对象池初始化为指定的大小
         /// </summary>
         /// <param name="capacity">最大数量该池可以容纳的SocketAsyncEventArgs对象</param>
-        public SocketAsyncEventArgsPool(int capacity)
+        internal SocketAsyncEventArgsPool(int capacity)
         {
             m_pool = new Stack<SocketAsyncEventArgs>(capacity);
         }
-
 
         /// <summary>
         /// 将一个SocketAsyncEventArgs实例添加到池中

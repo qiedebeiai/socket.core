@@ -10,26 +10,35 @@ namespace socket.core.Common
     /// 这个类创建一个可以分开的大缓冲区并分配给SocketAsyncEventArgs对象以供每个对象使用套接字I/O操作。这使得bufffers很容易被重复使用和防范碎片堆内存。
     /// BufferManager类中暴露的操作不是线程安全的
     /// </summary>
-    class BufferManager
+    internal class BufferManager
     {
         /// <summary>
         /// 缓冲池控制的总字节数
         /// </summary>
-        int m_numBytes;
+        private int m_numBytes;
         /// <summary>
         /// 缓冲区管理器维护的底层字节数组
         /// </summary>
-        byte[] m_buffer;
-        Stack<int> m_freeIndexPool;
-        int m_currentIndex;
-        int m_bufferSize;
+        private byte[] m_buffer;
+        /// <summary>
+        /// 偏移位
+        /// </summary>
+        private Stack<int> m_freeIndexPool;
+        /// <summary>
+        /// 当前偏移位
+        /// </summary>
+        private int m_currentIndex;
+        /// <summary>
+        /// 缓存大小
+        /// </summary>
+        private int m_bufferSize;
 
         /// <summary>
         /// 初始化缓存
         /// </summary>
         /// <param name="totalBytes">缓存区总大小</param>
         /// <param name="bufferSize">缓存大小</param>
-        public BufferManager(int totalBytes, int bufferSize)
+        internal BufferManager(int totalBytes, int bufferSize)
         {
             m_numBytes = totalBytes;
             m_currentIndex = 0;
