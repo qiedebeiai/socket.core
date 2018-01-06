@@ -23,23 +23,23 @@ namespace test.window.client.Client
 
         private void Client_OnClose()
         {
-            Console.WriteLine($"Push断开");
+            //Console.WriteLine($"Push断开");
         }
 
         private void Client_OnReceive(byte[] obj)
         {
-            Console.WriteLine($"Push接收byte[{obj.Length}]");
+            //Console.WriteLine($"Push接收byte[{obj.Length}]");
         }
 
         private void Client_OnAccept(bool obj)
         {
-            Console.WriteLine($"Push连接{obj}");
+            //Console.WriteLine($"Push连接{obj}");
         }
 
         public void Send(byte[] data,int offset,int length)
         {
             client.Send(data, offset, length);
-            Console.WriteLine($"Push发送byte[{length}]");
+            //Console.WriteLine($"Push发送byte[{length}]");
         }
 
         public void Close()

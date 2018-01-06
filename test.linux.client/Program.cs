@@ -39,7 +39,7 @@ namespace test.linux.client
                 Pack pack = new Pack(receiveBufferSize, ip, port, 0xff);
                 listPack.Add(pack);
 
-                Thread.Sleep(2);
+                //Thread.Sleep(2);
             }
 
             for (int i = 0; i < sendnumber; i++)
@@ -49,11 +49,11 @@ namespace test.linux.client
                 foreach (var item in listPack)
                 {
                     item.Send(data, 0, data.Length);
-                    Thread.Sleep(1);
+                    //Thread.Sleep(1);
                 }
             }
 
-            Thread.Sleep(1000 * 10);
+            //Thread.Sleep(1000 * 10);
             Console.WriteLine("发送已经完成！");
             //foreach (var item in listPush)
             //foreach (var item in listPull)

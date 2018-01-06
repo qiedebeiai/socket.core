@@ -29,12 +29,12 @@ namespace test.window.client.Client
 
         private void Client_OnClose()
         {
-            Console.WriteLine($"pull断开");
+            //Console.WriteLine($"pull断开");
         }
 
         private void Client_OnAccept(bool obj)
         {
-            Console.WriteLine($"pull连接{obj}");
+            //Console.WriteLine($"pull连接{obj}");
         }
 
         public void Send(byte[] data, int offset, int length)

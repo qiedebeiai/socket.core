@@ -29,20 +29,21 @@ namespace test.window.server.Server
 
         private void Server_OnReceive(Guid arg1, int arg2)
         {
-            Console.WriteLine($"pull接收 byte[{arg2}]");
+            //Console.WriteLine($"pull接收 byte[{arg2}]");
             byte[] data=server.Fetch(arg1, arg2);
             server.Send(arg1, data, 0, data.Length);
-            Console.WriteLine($"pull发送 byte[{arg2}]");
+            //Console.WriteLine($"pull发送 byte[{arg2}]");
+            //System.Threading.Thread.Sleep(1000*100);
         }
 
         private void Server_OnClose(Guid obj)
         {
-            Console.WriteLine($"pull断开{obj}");
+            //Console.WriteLine($"pull断开{obj}");
         }      
 
         private void Server_OnAccept(Guid obj)
         {
-            Console.WriteLine($"pull连接{obj}");
+            //Console.WriteLine($"pull连接{obj}");
 
         }
     }

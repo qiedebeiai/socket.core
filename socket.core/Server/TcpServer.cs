@@ -56,6 +56,10 @@ namespace socket.core.Server
         /// </summary>
         internal ConcurrentBag<ConnectClient> connectClient;
         /// <summary>
+        /// 发送对象最小值
+        /// </summary>
+        private int m_minSendSocketAsyncEventArgs = 10000;
+        /// <summary>
         /// 连接成功事件
         /// </summary>
         internal event Action<Guid> OnAccept;
@@ -79,10 +83,18 @@ namespace socket.core.Server
             overtime = overTime;
             m_numConnections = numConnections;
             m_receiveBufferSize = receiveBufferSize;
-            m_bufferManager = new BufferManager(receiveBufferSize * numConnections, receiveBufferSize);
-            m_receivePool = new SocketAsyncEventArgsPool(numConnections);
-            m_sendPool = new SocketAsyncEventArgsPool((Int32)(numConnections * 1.5));
-            m_maxNumberAcceptedClients = new Semaphore(numConnections, numConnections);
+            m_bufferManager = new BufferManager(receiveBufferSize * m_numConnections, receiveBufferSize);
+            m_receivePool = new SocketAsyncEventArgsPool(m_numConnections);
+            //当连接数量不大时，增加发送操作对象
+            if((Int32)(m_numConnections * 1.5) < m_minSendSocketAsyncEventArgs)
+            {
+                m_sendPool = new SocketAsyncEventArgsPool(m_minSendSocketAsyncEventArgs);
+            }
+            else
+            {
+                m_sendPool = new SocketAsyncEventArgsPool((Int32)(m_numConnections * 1.5));
+            }            
+            m_maxNumberAcceptedClients = new Semaphore(m_numConnections, m_numConnections);
             Init();
         }
 
@@ -108,14 +120,28 @@ namespace socket.core.Server
                 m_bufferManager.SetBuffer(saea_receive);
                 m_receivePool.Push(saea_receive);
             }
-            //预先发送端数量是接收端的1.5倍。以防止异步阻塞时，发送端不够用
-            for (int i = 0; i < (int)(m_numConnections * 1.5); i++)
+            //预先发送端数量是接收端的1.5倍。以防止异步阻塞时，发送端不够用, 如果小于m_minSendSocketAsyncEventArgs，则默认为m_minSendSocketAsyncEventArgs个
+            if ((Int32)(m_numConnections * 1.5) < m_minSendSocketAsyncEventArgs)
             {
                 //预先发送端分配一组可重用的消息
-                saea_send = new SocketAsyncEventArgs();
-                saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                saea_send.UserToken = new AsyncUserToken();
-                m_sendPool.Push(saea_send);
+                for (int i = 0; i < m_minSendSocketAsyncEventArgs; i++)
+                {
+                    saea_send = new SocketAsyncEventArgs();
+                    saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                    saea_send.UserToken = new AsyncUserToken();
+                    m_sendPool.Push(saea_send);
+                }
+            }
+            else
+            {
+                //预先发送端分配一组可重用的消息
+                for (int i = 0; i < (Int32)(m_numConnections * 1.5); i++)
+                {
+                    saea_send = new SocketAsyncEventArgs();
+                    saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                    saea_send.UserToken = new AsyncUserToken();
+                    m_sendPool.Push(saea_send);
+                }
             }
         }
 
@@ -130,8 +156,8 @@ namespace socket.core.Server
             listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             //绑定端口
             listenSocket.Bind(localEndPoint);
-            //启动服务器100连接，监听
-            listenSocket.Listen(100);
+            //挂起的连接队列的最大长度。
+            listenSocket.Listen(10000);
             //在监听套接字上接受
             StartAccept(null);
             //超时机制
@@ -217,7 +243,7 @@ namespace socket.core.Server
             //回调
             if (OnAccept != null)
             {
-                OnAccept(connecttoken.connectId);
+                OnAccept.BeginInvoke(connecttoken.connectId, null, null);
             }
             // 接受第二连接的要求
             StartAccept(e);
@@ -262,7 +288,7 @@ namespace socket.core.Server
                 {                    
                     if (OnClose != null)
                     {
-                        OnClose(conn.connectId);
+                        OnClose.BeginInvoke(conn.connectId,null,null);
                     }
                     connectClient.TryTake(out conn);
                 }
@@ -325,8 +351,8 @@ namespace socket.core.Server
                 {
                     ConnectClient connect = connectClient.FirstOrDefault(P => P.saea_receive == e);
                     if (connect != null)
-                    {
-                        OnReceive(connect.connectId, data);
+                    {       
+                        OnReceive.BeginInvoke(connect.connectId, data, null, null);
                     }
                 }
                 //如果接收到数据，超时记录设置为0
@@ -365,6 +391,10 @@ namespace socket.core.Server
         internal void Send(Guid connectId, byte[] data, int offset, int length)
         {
             ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
+            if(connect==null)
+            {
+                return;
+            }
             SocketAsyncEventArgs sendEventArgs = m_sendPool.Pop();
             ((AsyncUserToken)sendEventArgs.UserToken).Socket = connect.socket;
             sendEventArgs.SetBuffer(data, offset, length);
