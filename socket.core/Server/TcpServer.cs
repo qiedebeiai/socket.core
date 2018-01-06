@@ -56,7 +56,7 @@ namespace socket.core.Server
         /// </summary>
         internal ConcurrentBag<ConnectClient> connectClient;
         /// <summary>
-        /// 发送对象最小值
+        /// 最大发送并发量
         /// </summary>
         private int m_minSendSocketAsyncEventArgs = 10000;
         /// <summary>
