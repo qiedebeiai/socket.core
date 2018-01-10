@@ -11,6 +11,10 @@ namespace socket.core.Common
     internal class AsyncUserToken
     {
         /// <summary>
+        /// 连接ID
+        /// </summary>
+        public Guid connectId { get; set; }
+        /// <summary>
         /// 所使用的套接字
         /// </summary>
         internal Socket Socket { get; set; }

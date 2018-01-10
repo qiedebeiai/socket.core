@@ -5,16 +5,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>fengma_312@163.com</Authors>
     <Company>个人项目</Company>
-    <Description>这是一个基于C# .net standard 写的socket框架，可使用于.net Framework/dotnet core程序集，能在window(IOCP)/linux运行.局域网内实测支持上万个客户端。</Description>
+    <Description>This is a socket framework based on C # net standard2.0 write, can be used for .NET Framework / dotnet core assembly, can run in window (IOCP) / linux (epoll) .Use asynchronous connection, asynchronous send, asynchronous receive, Performance burst tables, and pass the stress test.
+这是一个基于C# .net standard2.0 写的socket框架，可使用于.net Framework/dotnet core程序集，能在window(IOCP)/linux(epoll)运行.使用异步连接，异步发送，异步接收，性能爆表，并且通过压力测试。</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/fengma312/socket.core</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/fengma312/socket.core/blob/master/LICENSE</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>socket Async Cache Pool C# core socket.core</PackageTags>
     <Copyright>fengma_312@163.com</Copyright>
-    <PackageReleaseNotes>服务端中。可以增加连接对象附加数据，避免调用方再需要建立映射表</PackageReleaseNotes>
+    <PackageReleaseNotes>使用线程池进行异步发送</PackageReleaseNotes>
     <RepositoryType>socket.core</RepositoryType>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
   </PropertyGroup>
 
 </Project>

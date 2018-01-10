@@ -18,32 +18,39 @@ namespace test.linux.server.Server
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>
         /// <param name="overtime">超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时</param>
         ///<param name = "port" > 端口 </ param >
-        public Pull(int numConnections, int receiveBufferSize, int overtime,int port)
+        public Pull(int numConnections, int receiveBufferSize, int overtime, int port)
         {
             server = new TcpPullServer(numConnections, receiveBufferSize, overtime);
             server.OnAccept += Server_OnAccept;
             server.OnReceive += Server_OnReceive;
+            server.OnSend += Server_OnSend;
             server.OnClose += Server_OnClose;
             server.Start(port);
         }
 
+        private void Server_OnAccept(Guid obj)
+        {
+            server.SetAttached(obj, 555);
+            Console.WriteLine($"Pull已连接{obj}");
+        }
+
+        private void Server_OnSend(Guid arg1, int arg2)
+        {
+            Console.WriteLine($"Pull已发送:{arg1} 长度:{arg2}");
+        }
+
         private void Server_OnReceive(Guid arg1, int arg2)
         {
-            Console.WriteLine($"pull接收 byte[{arg2}]");
-            byte[] data=server.Fetch(arg1, arg2);
+            int aaa = server.GetAttached<int>(arg1);
+            Console.WriteLine($"Pull已接收:{arg1} 长度:{arg2}");
+            byte[] data = server.Fetch(arg1, server.GetLength(arg1));
             server.Send(arg1, data, 0, data.Length);
-            Console.WriteLine($"pull发送 byte[{arg2}]");
         }
 
         private void Server_OnClose(Guid obj)
         {
-            Console.WriteLine($"pull断开{obj}");
-        }      
-
-        private void Server_OnAccept(Guid obj)
-        {
-            Console.WriteLine($"pull连接{obj}");
-
+            int aaa = server.GetAttached<int>(obj);
+            Console.WriteLine($"Pull断开{obj}");
         }
     }
 }

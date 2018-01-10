@@ -11,13 +11,15 @@ namespace test.linux.client.Client
 {
     public class Push
     {
-        TcpPushClient client;
-        public Push(int receiveBufferSize,string ip,int port)
+        private TcpPushClient client;
+
+        public Push(int receiveBufferSize, string ip, int port)
         {
             client = new TcpPushClient(receiveBufferSize);
-            client.OnAccept += Client_OnAccept;
+            client.OnConnect += Client_OnConnect;
             client.OnReceive += Client_OnReceive;
-            client.OnClose += Client_OnClose;          
+            client.OnSend += Client_OnSend;
+            client.OnClose += Client_OnClose;
             client.Connect(ip, port);
         }
 
@@ -31,21 +33,25 @@ namespace test.linux.client.Client
             Console.WriteLine($"Push接收byte[{obj.Length}]");
         }
 
-        private void Client_OnAccept(bool obj)
+        private void Client_OnConnect(bool obj)
         {
             Console.WriteLine($"Push连接{obj}");
         }
 
-        public void Send(byte[] data,int offset,int length)
+        private void Client_OnSend(int obj)
+        {
+            Console.WriteLine($"Push已发送长度{obj}");
+        }
+
+        public void Send(byte[] data, int offset, int length)
         {
             client.Send(data, offset, length);
-            Console.WriteLine($"Push发送byte[{length}]");
         }
 
         public void Close()
         {
             client.Close();
         }
-      
+
     }
 }

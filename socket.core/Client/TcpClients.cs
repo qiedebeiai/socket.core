@@ -1,5 +1,6 @@
 ﻿using socket.core.Common;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -22,6 +23,10 @@ namespace socket.core.Client
         /// </summary>
         private SocketAsyncEventArgsPool m_sendPool;
         /// <summary>
+        /// 发送工作线程数
+        /// </summary>
+        private int workingThreadNumber = 1;
+        /// <summary>
         /// 用于每个套接字I/O操作的缓冲区大小
         /// </summary>
         private int m_receiveBufferSize;
@@ -34,26 +39,34 @@ namespace socket.core.Client
         /// </summary>
         private SocketAsyncEventArgs receiveSocketAsyncEventArgs;
         /// <summary>
-        /// 发送时的最大的并发数
+        /// 发送对象默认数
         /// </summary>
-        private int m_minSendSocketAsyncEventArgs = 200;
+        private int m_minSendSocketAsyncEventArgs = 10;
         /// <summary>
-        /// 是否连接成功
+        /// 需要发送的数据
         /// </summary>
-        public bool m_connect { get; set; }
+        private ConcurrentQueue<SendingQueue> sendQueue;      
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        internal event Action<bool> OnAccept;
+        internal event Action<bool> OnConnect;
         /// <summary>
         /// 接收通知事件
         /// </summary>
         internal event Action<byte[]> OnReceive;
         /// <summary>
+        /// 已送通知事件
+        /// </summary>
+        internal event Action<int> OnSend;
+        /// <summary>
         /// 断开连接通知事件
         /// </summary>
-        internal event Action OnClose;      
-       
+        internal event Action OnClose;
+        /// <summary>
+        /// 锁
+        /// </summary>
+        private Mutex mutex = new Mutex();
+    
         /// <summary>
         /// 设置基本配置
         /// </summary>
@@ -61,9 +74,8 @@ namespace socket.core.Client
         internal TcpClients(int receiveBufferSize)
         {
             m_receiveBufferSize = receiveBufferSize;
-            m_sendPool = new SocketAsyncEventArgsPool(m_minSendSocketAsyncEventArgs);
-            Init();
-            m_connect = false;
+            m_sendPool = new SocketAsyncEventArgsPool(m_minSendSocketAsyncEventArgs);        
+            Init();           
         }
 
         /// <summary>
@@ -72,13 +84,14 @@ namespace socket.core.Client
         private void Init()
         {
             buffer_receive = new byte[m_receiveBufferSize];
+            sendQueue = new ConcurrentQueue<SendingQueue>();
             //分配的发送对象池socketasynceventargs，不分配缓存
             SocketAsyncEventArgs saea_send;
             for (int i = 0; i < m_minSendSocketAsyncEventArgs; i++)
             {
                 //预先发送端分配一组可重用的消息
                 saea_send = new SocketAsyncEventArgs();
-                saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(ProcessSend);
+                saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
                 saea_send.UserToken = new AsyncUserToken();
                 m_sendPool.Push(saea_send);
             }
@@ -101,13 +114,21 @@ namespace socket.core.Client
                 }
             }
             IPEndPoint localEndPoint = new IPEndPoint(ipaddr, port);
-            socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);            
             SocketAsyncEventArgs connSocketAsyncEventArgs = new SocketAsyncEventArgs();
+            connSocketAsyncEventArgs.AcceptSocket = socket;
             connSocketAsyncEventArgs.RemoteEndPoint = localEndPoint;
-            connSocketAsyncEventArgs.Completed += ProcessAccept;
+            connSocketAsyncEventArgs.Completed += IO_Completed;
             if (!socket.ConnectAsync(connSocketAsyncEventArgs))
             {
-                ProcessAccept(null, connSocketAsyncEventArgs);
+                ProcessConnect(connSocketAsyncEventArgs);
+            }
+            //发送线程池
+            ThreadPool.SetMinThreads(1, 1);
+            ThreadPool.SetMaxThreads(workingThreadNumber, workingThreadNumber);
+            for (int i = 1; i <= workingThreadNumber; i++)
+            {
+                ThreadPool.QueueUserWorkItem(new WaitCallback(StartSend));
             }
         }
 
@@ -116,25 +137,116 @@ namespace socket.core.Client
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">操作对象</param>
-        private void ProcessAccept(object sender, SocketAsyncEventArgs e)
+        private void ProcessConnect(SocketAsyncEventArgs e)
         {
             if (e.SocketError == SocketError.Success)
             {
-                m_connect = true;          
                 receiveSocketAsyncEventArgs = new SocketAsyncEventArgs();
-                receiveSocketAsyncEventArgs.SetBuffer(buffer_receive, 0, buffer_receive.Length);
-                receiveSocketAsyncEventArgs.Completed += ProcessReceive;
-                socket.ReceiveAsync(receiveSocketAsyncEventArgs);
-                if (OnAccept != null)
+                receiveSocketAsyncEventArgs.AcceptSocket = e.AcceptSocket;
+                receiveSocketAsyncEventArgs.SetBuffer(buffer_receive,0, buffer_receive.Length);
+                receiveSocketAsyncEventArgs.Completed += IO_Completed;                
+                if (!e.AcceptSocket.ReceiveAsync(receiveSocketAsyncEventArgs))
                 {
-                    OnAccept.BeginInvoke(true, null, null);
+                    ProcessReceive(receiveSocketAsyncEventArgs);
+                }                
+                if (OnConnect != null)
+                {
+                    OnConnect(true);
                 }
             }
             else
             {
-                if (OnAccept != null)
+                if (OnConnect != null)
                 {
-                    OnAccept.BeginInvoke(false, null, null);
+                    OnConnect(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 每当套接字上完成接收或发送操作时，都会调用此方法。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">与完成的接收操作关联的SocketAsyncEventArg</param>
+        private void IO_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            //确定刚刚完成哪种类型的操作并调用相关的处理程序
+            switch (e.LastOperation)
+            {
+                case SocketAsyncOperation.Receive:
+                    ProcessReceive(e);
+                    break;
+                case SocketAsyncOperation.Send:
+                    ProcessSend(e);
+                    break;
+                case SocketAsyncOperation.Connect:
+                    ProcessConnect(e);
+                    break;
+                default:
+                    throw new ArgumentException("套接字上完成的最后一个操作不是接收或发送或连接。");
+            }
+        }
+
+        #region 接收
+
+        /// <summary>
+        /// 接受回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">操作对象</param>
+        private void ProcessReceive(SocketAsyncEventArgs e)
+        {
+            if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
+            {
+                byte[] data = new byte[e.BytesTransferred];
+                Buffer.BlockCopy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
+                if (OnReceive != null)
+                {
+                    OnReceive(data);
+                }
+                //将收到的数据回显给客户端             
+                if (!e.AcceptSocket.ReceiveAsync(e))
+                {
+                    ProcessReceive(e);
+                }
+            }
+            else
+            {
+                CloseClientSocket(e);
+            }
+        }
+        #endregion
+
+
+        #region 发送
+
+        /// <summary>
+        /// 异步发送消息 
+        /// </summary>
+        /// <param name="data">数据</param>
+        /// <param name="offset">偏移位</param>
+        /// <param name="length">长度</param>
+        internal void Send(byte[] data, int offset, int length)
+        {
+            sendQueue.Enqueue(new SendingQueue() { data = data, offset = offset, length = length });
+        }
+
+        /// <summary>
+        /// 开始启用发送
+        /// </summary>
+        /// <param name="obj"></param>
+        private void StartSend(object obj)
+        {
+            while (true)
+            {
+                SendingQueue sending;                
+                if (sendQueue.TryDequeue(out sending))
+                {
+                    Send(sending);
+                }
+                else
+                {
+                    Thread.Sleep(20);
                 }
             }
         }
@@ -145,30 +257,44 @@ namespace socket.core.Client
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        internal void Send(byte[] data, int offset, int length)
+        internal void Send(SendingQueue sendQuere)
         {
-            if (!m_connect)
+            if (socket == null || socket.Connected == false)
             {
                 return;
+            }            
+            mutex.WaitOne();
+            //如果发送池为空时，临时新建一个放入池中
+            if (m_sendPool.Count == 0)
+            {
+                SocketAsyncEventArgs saea_send = new SocketAsyncEventArgs();
+                saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                saea_send.UserToken = new AsyncUserToken();
+                m_sendPool.Push(saea_send);
             }
             SocketAsyncEventArgs sendEventArgs = m_sendPool.Pop();
-            sendEventArgs.SetBuffer(data, offset, length);
-            if (!socket.SendAsync(sendEventArgs))
+            mutex.ReleaseMutex();
+            sendEventArgs.AcceptSocket = socket;
+            sendEventArgs.SetBuffer(sendQuere.data, sendQuere.offset, sendQuere.length);
+            if (!sendEventArgs.AcceptSocket.SendAsync(sendEventArgs))
             {
-                ProcessSend(null, sendEventArgs);
+                ProcessSend(sendEventArgs);
             }
         }
 
         /// <summary>
         /// 发送回调
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e">操作对象</param>
-        private void ProcessSend(object sender, SocketAsyncEventArgs e)
+        private void ProcessSend(SocketAsyncEventArgs e)
         {
             if (e.SocketError == SocketError.Success)
             {
                 m_sendPool.Push(e);
+                if(OnSend!=null)
+                {
+                    OnSend(e.BytesTransferred);
+                }
             }
             else
             {
@@ -176,31 +302,15 @@ namespace socket.core.Client
             }
         }
 
+        #endregion
+
+        #region 断开
         /// <summary>
-        /// 接受回调
+        /// 客户端主动关闭连接
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e">操作对象</param>
-        private void ProcessReceive(object sender, SocketAsyncEventArgs e)
+        internal void Close()
         {
-            if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
-            {
-                byte[] data = new byte[e.BytesTransferred];
-                Array.Copy(e.Buffer, e.Offset, data, 0, e.BytesTransferred);
-                if (OnReceive != null)
-                {
-                    OnReceive.BeginInvoke(data,null,null);
-                }
-                //将收到的数据回显给客户端             
-                if (!socket.ReceiveAsync(e))
-                {
-                    ProcessReceive(null, e);
-                }
-            }
-            else
-            {
-                CloseClientSocket(e);
-            }
+            CloseClientSocket(receiveSocketAsyncEventArgs);
         }
 
         /// <summary>
@@ -221,19 +331,14 @@ namespace socket.core.Client
             // 抛出客户端进程已经关闭
             catch (Exception) { }
             socket.Close();
+            m_sendPool.Clear();
             if (OnClose != null)
             {
-                OnClose.BeginInvoke(null, null);
+                OnClose();
             }
         }
+        #endregion  
 
-        /// <summary>
-        /// 客户端主动关闭连接
-        /// </summary>
-        internal void Close()
-        {
-            CloseClientSocket(receiveSocketAsyncEventArgs);
-        }
 
     }
 }

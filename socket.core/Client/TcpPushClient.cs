@@ -19,11 +19,15 @@ namespace socket.core.Client
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        public event Action<bool> OnAccept;
+        public event Action<bool> OnConnect;
         /// <summary>
         /// 接收通知事件
         /// </summary>
         public event Action<byte[]> OnReceive;
+        /// <summary>
+        /// 已发送通知事件
+        /// </summary>
+        public event Action<int> OnSend;
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
@@ -37,11 +41,13 @@ namespace socket.core.Client
         {
             Thread thread = new Thread(new ThreadStart(() =>
             {
-                tcpClients = new TcpClients( receiveBufferSize);
-                tcpClients.OnAccept += TcpServer_eventactionAccept;
+                tcpClients = new TcpClients(receiveBufferSize);
+                tcpClients.OnConnect += TcpServer_eventactionConnect;
                 tcpClients.OnReceive += TcpServer_eventactionReceive;
+                tcpClients.OnSend += TcpClients_OnSend;
                 tcpClients.OnClose += TcpServer_eventClose;
             }));
+            thread.IsBackground = true;
             thread.Start();
         }
 
@@ -63,10 +69,10 @@ namespace socket.core.Client
         /// 连接成功事件方法
         /// </summary>
         /// <param name="success">是否成功连接</param>
-        private void TcpServer_eventactionAccept(bool success)
+        private void TcpServer_eventactionConnect(bool success)
         {
-            if (OnAccept != null)
-                OnAccept(success);
+            if (OnConnect != null)
+                OnConnect(success);
         }
 
         /// <summary>
@@ -81,10 +87,20 @@ namespace socket.core.Client
         }
 
         /// <summary>
+        /// 已发送长度
+        /// </summary>
+        /// <param name="length"></param>
+        private void TcpClients_OnSend(int length)
+        {
+            if (OnSend != null)
+                OnSend(length);
+        }
+
+        /// <summary>
         /// 接收通知事件方法
         /// </summary>
         /// <param name="data">数据</param>
-        private void TcpServer_eventactionReceive( byte[] data)
+        private void TcpServer_eventactionReceive(byte[] data)
         {
             if (OnReceive != null)
                 OnReceive(data);

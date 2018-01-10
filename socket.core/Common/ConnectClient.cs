@@ -29,6 +29,6 @@ namespace socket.core.Common
         /// <summary>
         /// 附加数据
         /// </summary>
-        public dynamic attached { get; set; }
+        public object attached { get; set; }
     }
 }

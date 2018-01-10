@@ -18,11 +18,15 @@ namespace socket.core.Client
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        public event Action<bool> OnAccept;
+        public event Action<bool> OnConnect;
         /// <summary>
         /// 接收通知事件
         /// </summary>
         public event Action<int> OnReceive;
+        /// <summary>
+        /// 已发送通知事件
+        /// </summary>
+        public event Action<int> OnSend;     
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
@@ -45,10 +49,12 @@ namespace socket.core.Client
             {
                 queue = new List<byte>();
                 tcpClients = new TcpClients( receiveBufferSize);
-                tcpClients.OnAccept += TcpServer_eventactionAccept;
+                tcpClients.OnConnect += TcpServer_eventactionConnect;
                 tcpClients.OnReceive += TcpServer_eventactionReceive;
+                tcpClients.OnSend += TcpClients_OnSend;
                 tcpClients.OnClose += TcpServer_eventClose;
             }));
+            thread.IsBackground = true;
             thread.Start();
         }
 
@@ -70,10 +76,10 @@ namespace socket.core.Client
         /// 连接成功事件方法
         /// </summary>
         /// <param name="success">是否成功连接</param>
-        private void TcpServer_eventactionAccept(bool success)
+        private void TcpServer_eventactionConnect(bool success)
         {
-            if (OnAccept != null)
-                OnAccept(success);
+            if (OnConnect != null)
+                OnConnect(success);
         }
 
         /// <summary>
@@ -85,6 +91,16 @@ namespace socket.core.Client
         public void Send( byte[] data, int offset, int length)
         {
             tcpClients.Send(data, offset, length);
+        }
+
+        /// <summary>
+        /// 已发送长度
+        /// </summary>
+        /// <param name="length"></param>
+        private void TcpClients_OnSend(int length)
+        {
+            if (OnSend != null)
+                OnSend(length);
         }
 
         /// <summary>

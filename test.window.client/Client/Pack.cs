@@ -15,8 +15,9 @@ namespace test.window.client.Client
         public Pack(int receiveBufferSize, string ip, int port,uint headerFlag)
         {
             client = new TcpPackClient(receiveBufferSize, headerFlag);
-            client.OnAccept += Client_OnAccept;
+            client.OnConnect += Client_OnConnect;
             client.OnReceive += Client_OnReceive;
+            client.OnSend += Client_OnSend;
             client.OnClose += Client_OnClose;
             client.Connect(ip, port);
         }
@@ -31,7 +32,7 @@ namespace test.window.client.Client
             Console.WriteLine($"pack接收byte[{obj.Length}]");
         }
 
-        private void Client_OnAccept(bool obj)
+        private void Client_OnConnect(bool obj)
         {
             Console.WriteLine($"pack连接{obj}");
         }
@@ -39,7 +40,12 @@ namespace test.window.client.Client
         public void Send(byte[] data, int offset, int length)
         {
             client.Send(data, offset, length);
-            Console.WriteLine($"pack发送byte[{length}]");
+            
+        }
+
+        private void Client_OnSend(int obj)
+        {
+            Console.WriteLine($"pack已发送长度{obj}");
         }
 
         public void Close()

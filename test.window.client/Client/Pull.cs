@@ -15,8 +15,9 @@ namespace test.window.client.Client
         public Pull(int receiveBufferSize, string ip, int port)
         {
             client = new TcpPullClient(receiveBufferSize);
-            client.OnAccept += Client_OnAccept;
+            client.OnConnect += Client_OnConnect;
             client.OnReceive += Client_OnReceive;
+            client.OnSend += Client_OnSend;
             client.OnClose += Client_OnClose;
             client.Connect(ip, port);
         }
@@ -29,18 +30,22 @@ namespace test.window.client.Client
 
         private void Client_OnClose()
         {
-            //Console.WriteLine($"pull断开");
+            Console.WriteLine($"pull断开");
         }
 
-        private void Client_OnAccept(bool obj)
+        private void Client_OnConnect(bool obj)
         {
-            //Console.WriteLine($"pull连接{obj}");
+            Console.WriteLine($"pull连接{obj}");
         }
 
         public void Send(byte[] data, int offset, int length)
         {
             client.Send(data, offset, length);
-            Console.WriteLine($"pull发送byte[{length}]");
+        }
+
+        private void Client_OnSend(int obj)
+        {
+            Console.WriteLine($"Push已发送长度{obj}");
         }
 
         public void Close()

@@ -22,9 +22,9 @@ namespace test.linux.server
             int receiveBufferSize = int.Parse(Configuration["receiveBufferSize"]);
             int overtime = int.Parse(Configuration["overtime"]);
 
-            //Push push = new Push(numConnections, receiveBufferSize, overtime, port);
+            Push push = new Push(numConnections, receiveBufferSize, overtime, port);
             //Pull pull = new Pull(numConnections, receiveBufferSize, overtime, port);
-            Pack pack = new Pack(numConnections, receiveBufferSize, overtime, port, 0xff);
+            //Pack pack = new Pack(numConnections, receiveBufferSize, overtime, port, 0xff);
             Console.WriteLine("服务端已准备好!");
             Console.Read();
         }

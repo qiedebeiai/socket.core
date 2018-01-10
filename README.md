@@ -1,6 +1,6 @@
 ﻿socket.core
 ===
-This is a socket framework written based on C # standard, the interface design is simple, separate thread operation, does not affect the caller. Can be used in the net Framework 4.x.x / standard assembly, in the window (IOCP) / linux normal operation.
+This is a socket framework written based on C # standard2.0, the interface design is simple, separate thread operation, does not affect the caller. Can be used in the net Framework 4.x.x / standard assembly, in the window (IOCP) / linux normal operation.
 ---
 
 下面有中文文档     
@@ -26,7 +26,7 @@ Note: connectId (guid) represents a connection object, data (byte []), success (
 > Client client.Connect (ip, port);  
 * 3. Trigger the connection event   
 > Server server.OnAccept (connectId); Received a connection id, can be used to send, receive, close the tag  
-> Client client.OnAccept (success); Receives whether to connect to the server successfully   
+> Client client.OnConnect(success); Receives whether to connect to the server successfully   
 * 4. Send a message  
 > Server server.Send (connectId, data, offset, length);  
 > Client client.Send (data, offset, length);  
@@ -53,17 +53,19 @@ PACK header format
 XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY  
 The first 10 X bits are the header identification bits, which are used for data packet verification. The effective header identification value ranges from 0 to 1023 (0x3FF). When the header identification equals 0, the header is not checked. The last 22 bits of Y are length bits. Package length. The maximum valid packet length can not exceed 4194303 (0x3FFFFF) bytes (bytes), the application can be set by the TcpPackServer / TcpPackClient constructor parameter headerFlag  
 
-Other methods introduced   
-* 1. bool SetAttached <T> (Guid connectId, T data)   
+Server other methods introduced   
+* 1. bool SetAttached(Guid connectId, object data)       
 > The server sets additional data for each client to prevent the user from establishing the user mapping table   
-* 2. dynamic GetAttached (Guid connectId)   
+* 2.  T GetAttached<T>(Guid connectId)    
 > Get additional data for the specified client   
+
+
 2017/12/27  
 
-socket.core 
+socket.core  
 ===
 
-这是一个基于C# standard 写的socket框架，接口设计简单，单独线程运行,不影响调用方。可使用于net Framework 4.x.x/standard程序集，能在window(IOCP)/linux正常运行.
+这是一个基于C# standard2.0 写的socket框架，接口设计简单，单独线程运行,不影响调用方。可使用于net Framework 4.x.x/standard程序集，能在window(IOCP)/linux正常运行.
 ---
 安装NuGet:  
 Package Manager: Install-Package socket.core   
@@ -85,7 +87,7 @@ Paket CLI:paket add socket.core
 	>客户端 client.Connect(ip,port);   
 * 3.触发连接事件   
 	>服务端 server.OnAccept(connectId);		接收到一个连接id,可用他来发送，接收，关闭的标记   
-	>客户端 client.OnAccept(success);		接收是否成功连接到服务器   
+	>客户端 client.OnConnect(success);		接收是否成功连接到服务器   
 * 4.发送消息   
 	>服务端 server.Send(connectId,data,offset,length);  
 	>客户端 client.Send(data,offset,length);
@@ -111,13 +113,11 @@ Paket CLI:paket add socket.core
 	XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY   
 	前10位X为包头标识位，用于数据包校验，有效包头标识取值范围0~1023(0x3FF),当包头标识等于0时，不校验包头，后22位Y为长度位，记录包体长度。有效数据包最大长度不能超过4194303（0x3FFFFF）字节(byte),应用程序可以通过TcpPackServer/TcpPackClient构造函数参数headerFlag设置
 
-其它方法介绍   
-* 1. bool SetAttached<T>(Guid connectId, T data)  
+服务端其它方法介绍   
+* 1. bool SetAttached(Guid connectId, object data)  
 	>服务端为每个客户端设置附加数据，避免用户自己再建立用户映射表   
-* 2. dynamic GetAttached(Guid connectId)   
-	>获取指定客户端的附加数据   
+* 2. T GetAttached<T>(Guid connectId)   
+	>获取指定客户端的附加数据
 
-    强烈建议在处理事件方法时，使用异步/线程或消息队列处理，减少处理时间，以免影响框架性能          
-   
 	  
 	2017/12/27

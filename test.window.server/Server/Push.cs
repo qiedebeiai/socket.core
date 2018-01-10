@@ -25,28 +25,34 @@ namespace test.window.server.Server
             server = new TcpPushServer(numConnections, receiveBufferSize, overtime);
             server.OnAccept += Server_OnAccept;
             server.OnReceive += Server_OnReceive;
+            server.OnSend += Server_OnSend;
             server.OnClose += Server_OnClose;          
             server.Start(port);
         }
 
-        private void Server_OnClose(Guid obj)
+        private void Server_OnAccept(Guid obj)
         {
-            int aaa = server.GetAttached(obj);
-            //Console.WriteLine($"Push断开{obj}");
+            server.SetAttached(obj, 555);
+            Console.WriteLine($"Push已连接{obj}");
+        }
+        
+        private void Server_OnSend(Guid arg1, int arg2)
+        {
+            Console.WriteLine($"Push已发送:{arg1} 长度:{arg2}");
         }
 
         private void Server_OnReceive(Guid arg1, byte[] arg2)
         {
-            //int aaa=server.GetAttached(arg1);
-            //Console.WriteLine($"Push接收 byte[{arg2.Length}]");
+            int aaa=server.GetAttached<int>(arg1);
+            Console.WriteLine($"Push已接收:{arg1} 长度:{arg2.Length}");
             server.Send(arg1, arg2, 0, arg2.Length);
-            //Console.WriteLine($"Push发送 byte[{arg2.Length}]");
         }
 
-        private void Server_OnAccept(Guid obj)
+        private void Server_OnClose(Guid obj)
         {
-            server.SetAttached<int>(obj,555);
-           // Console.WriteLine($"Push连接{obj}");           
+            int aaa = server.GetAttached<int>(obj);
+            Console.WriteLine($"Push断开{obj}");
         }
+
     }
 }
