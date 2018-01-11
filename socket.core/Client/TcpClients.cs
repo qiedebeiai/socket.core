@@ -21,11 +21,7 @@ namespace socket.core.Client
         /// <summary>
         /// 发送端SocketAsyncEventArgs对象重用池，发送套接字操作
         /// </summary>
-        private SocketAsyncEventArgsPool m_sendPool;
-        /// <summary>
-        /// 发送工作线程数
-        /// </summary>
-        private int workingThreadNumber = 1;
+        private SocketAsyncEventArgsPool m_sendPool;       
         /// <summary>
         /// 用于每个套接字I/O操作的缓冲区大小
         /// </summary>
@@ -33,7 +29,7 @@ namespace socket.core.Client
         /// <summary>
         /// 接受缓存
         /// </summary>
-        private byte[] buffer_receive;       
+        private byte[] buffer_receive;
         /// <summary>
         /// 接收对象
         /// </summary>
@@ -45,7 +41,7 @@ namespace socket.core.Client
         /// <summary>
         /// 需要发送的数据
         /// </summary>
-        private ConcurrentQueue<SendingQueue> sendQueue;      
+        private ConcurrentQueue<SendingQueue> sendQueue;
         /// <summary>
         /// 连接成功事件
         /// </summary>
@@ -66,7 +62,21 @@ namespace socket.core.Client
         /// 锁
         /// </summary>
         private Mutex mutex = new Mutex();
-    
+        /// <summary>
+        /// 是否连接服务器
+        /// </summary>
+        public bool Connected
+        {
+            get
+            {
+                if(socket==null)
+                {
+                    return false;
+                }
+                return socket.Connected;
+            }
+        }
+
         /// <summary>
         /// 设置基本配置
         /// </summary>
@@ -74,8 +84,8 @@ namespace socket.core.Client
         internal TcpClients(int receiveBufferSize)
         {
             m_receiveBufferSize = receiveBufferSize;
-            m_sendPool = new SocketAsyncEventArgsPool(m_minSendSocketAsyncEventArgs);        
-            Init();           
+            m_sendPool = new SocketAsyncEventArgsPool(m_minSendSocketAsyncEventArgs);
+            Init();
         }
 
         /// <summary>
@@ -114,7 +124,7 @@ namespace socket.core.Client
                 }
             }
             IPEndPoint localEndPoint = new IPEndPoint(ipaddr, port);
-            socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);            
+            socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             SocketAsyncEventArgs connSocketAsyncEventArgs = new SocketAsyncEventArgs();
             connSocketAsyncEventArgs.AcceptSocket = socket;
             connSocketAsyncEventArgs.RemoteEndPoint = localEndPoint;
@@ -122,12 +132,7 @@ namespace socket.core.Client
             if (!socket.ConnectAsync(connSocketAsyncEventArgs))
             {
                 ProcessConnect(connSocketAsyncEventArgs);
-            }
-            //发送线程池        
-            for (int i = 1; i <= workingThreadNumber; i++)
-            {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(StartSend));
-            }
+            }            
         }
 
         /// <summary>
@@ -141,16 +146,23 @@ namespace socket.core.Client
             {
                 receiveSocketAsyncEventArgs = new SocketAsyncEventArgs();
                 receiveSocketAsyncEventArgs.AcceptSocket = e.AcceptSocket;
-                receiveSocketAsyncEventArgs.SetBuffer(buffer_receive,0, buffer_receive.Length);
-                receiveSocketAsyncEventArgs.Completed += IO_Completed;                
+                receiveSocketAsyncEventArgs.SetBuffer(buffer_receive, 0, buffer_receive.Length);
+                receiveSocketAsyncEventArgs.Completed += IO_Completed;
                 if (!e.AcceptSocket.ReceiveAsync(receiveSocketAsyncEventArgs))
                 {
                     ProcessReceive(receiveSocketAsyncEventArgs);
-                }                
+                }
                 if (OnConnect != null)
                 {
                     OnConnect(true);
                 }
+                //发送线程
+                Thread thread = new Thread(new ThreadStart(() =>
+                {
+                    StartSend();
+                }));
+                thread.IsBackground = true;
+                thread.Start();               
             }
             else
             {
@@ -214,8 +226,7 @@ namespace socket.core.Client
             }
         }
         #endregion
-
-
+        
         #region 发送
 
         /// <summary>
@@ -224,6 +235,7 @@ namespace socket.core.Client
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
+        /// <returns>true:已连接到服务端,false:未连接到服务端</returns>
         internal void Send(byte[] data, int offset, int length)
         {
             sendQueue.Enqueue(new SendingQueue() { data = data, offset = offset, length = length });
@@ -232,12 +244,11 @@ namespace socket.core.Client
         /// <summary>
         /// 开始启用发送
         /// </summary>
-        /// <param name="obj"></param>
-        private void StartSend(object obj)
+        private void StartSend()
         {
-            while (true)
+            while (Connected)
             {
-                SendingQueue sending;                
+                SendingQueue sending;
                 if (sendQueue.TryDequeue(out sending))
                 {
                     Send(sending);
@@ -257,10 +268,6 @@ namespace socket.core.Client
         /// <param name="length">长度</param>
         internal void Send(SendingQueue sendQuere)
         {
-            if (socket == null || socket.Connected == false)
-            {
-                return;
-            }            
             mutex.WaitOne();
             //如果发送池为空时，临时新建一个放入池中
             if (m_sendPool.Count == 0)
@@ -289,7 +296,7 @@ namespace socket.core.Client
             if (e.SocketError == SocketError.Success)
             {
                 m_sendPool.Push(e);
-                if(OnSend!=null)
+                if (OnSend != null)
                 {
                     OnSend(e.BytesTransferred);
                 }

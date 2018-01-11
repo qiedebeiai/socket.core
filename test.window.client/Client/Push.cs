@@ -12,7 +12,7 @@ namespace test.window.client.Client
     public class Push
     {
         private TcpPushClient client;
-
+        Random random = new Random();
         public Push(int receiveBufferSize,string ip,int port)
         {
             client = new TcpPushClient(receiveBufferSize);
@@ -30,7 +30,7 @@ namespace test.window.client.Client
 
         private void Client_OnReceive(byte[] obj)
         {
-            Console.WriteLine($"Push接收byte[{obj.Length}]");
+            Console.WriteLine($"Push接收长度[{obj.Length}]     {random.Next(1,9999)}");
         }
 
         private void Client_OnConnect(bool obj)
@@ -40,11 +40,11 @@ namespace test.window.client.Client
 
         private void Client_OnSend(int obj)
         {
-            Console.WriteLine($"Push已发送长度{obj}");
+            Console.WriteLine($"Push已发送长度{obj}    {random.Next(1, 9999)}");
         }
 
         public void Send(byte[] data,int offset,int length)
-        {
+        {   
             client.Send(data, offset, length);
         }
 

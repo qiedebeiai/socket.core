@@ -32,6 +32,20 @@ namespace socket.core.Client
         /// 断开连接通知事件
         /// </summary>
         public event Action OnClose;
+        /// <summary>
+        /// 是否连接服务器
+        /// </summary>
+        public bool Connected
+        {
+            get
+            {
+                if(tcpClients==null)
+                {
+                    return false;
+                }
+                return tcpClients.Connected;
+            }
+        }
 
         /// <summary>
         /// 设置基本配置

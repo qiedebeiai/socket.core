@@ -40,6 +40,21 @@ namespace socket.core.Client
         /// </summary>
         private Mutex mutex = new Mutex();
         /// <summary>
+        /// 是否连接服务器
+        /// </summary>
+        public bool Connected
+        {
+            get
+            {
+                if (tcpClients == null)
+                {
+                    return false;
+                }
+                return tcpClients.Connected;
+            }
+        }
+
+        /// <summary>
         /// 设置基本配置
         /// </summary>   
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>

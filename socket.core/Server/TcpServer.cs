@@ -60,9 +60,13 @@ namespace socket.core.Server
         /// </summary>
         private ConcurrentQueue<SendingQueue> sendQueue;
         /// <summary>
-        /// 发送工作线程数
+        /// 发送队列锁
         /// </summary>
-        private int workingThreadNumber = 10;
+        //private ManualResetEvent manual = new ManualResetEvent(false);
+        /// <summary>
+        /// 锁
+        /// </summary>
+        private Mutex mutex = new Mutex();
         /// <summary>
         /// 连接成功事件
         /// </summary>
@@ -144,11 +148,13 @@ namespace socket.core.Server
             listenSocket.Listen(1000);
             //在监听套接字上接受
             StartAccept(null);
-            //发送线程池           
-            for (int i = 1; i <= workingThreadNumber; i++)
+            //发送线程
+            Thread thread = new Thread(new ThreadStart(() =>
             {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(StartSend), i.ToString());
-            }
+                StartSend();
+            }));
+            thread.IsBackground = true;
+            thread.Start();
             //超时机制
             if (overtime > 0)
             {
@@ -239,9 +245,7 @@ namespace socket.core.Server
         }
                 
         #endregion
-
-
-
+        
         #region 接受处理 receive
 
         /// <summary>
@@ -285,15 +289,13 @@ namespace socket.core.Server
         }
 
         #endregion
-
-
+        
         #region 发送处理 send
 
         /// <summary>
         /// 开始启用发送
         /// </summary>
-        /// <param name="obj"></param>
-        private void StartSend(object obj)
+        private void StartSend()
         {
             while (true)
             {
@@ -318,7 +320,7 @@ namespace socket.core.Server
         /// <param name="length">长度</param>
         internal void Send(Guid connectId, byte[] data, int offset, int length)
         {
-            sendQueue.Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });            
+            sendQueue.Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });          
         }
 
         /// <summary>
@@ -333,6 +335,7 @@ namespace socket.core.Server
                 return;
             }
             //如果发送池为空时，临时新建一个放入池中
+            mutex.WaitOne();
             if (m_sendPool.Count == 0)
             {
                 SocketAsyncEventArgs saea_send = new SocketAsyncEventArgs();
@@ -341,6 +344,7 @@ namespace socket.core.Server
                 m_sendPool.Push(saea_send);
             }
             SocketAsyncEventArgs sendEventArgs = m_sendPool.Pop();
+            mutex.ReleaseMutex();
             ((AsyncUserToken)sendEventArgs.UserToken).Socket = connect.socket;
             ((AsyncUserToken)sendEventArgs.UserToken).connectId = sendQuere.connectId;
             sendEventArgs.SetBuffer(sendQuere.data, sendQuere.offset, sendQuere.length);
