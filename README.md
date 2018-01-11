@@ -30,13 +30,16 @@ Note: connectId (guid) represents a connection object, data (byte []), success (
 * 4. Send a message  
 > Server server.Send (connectId, data, offset, length);  
 > Client client.Send (data, offset, length);  
-* 5. Triggered receive events  
+* 5. Trigger sent events  
+> Server server.OnSend (connectId, length);  
+> Client client.OnSend (length);   
+* 6. Triggered receive events  
 > Server server.OnReceive (connectId, data);   
 > Client client.OnReceive (data);   
-* 6. Close the connection   
+* 7. Close the connection   
 > Server server.Close (connectId);   
 > Client client.Close ();   
-* 7. Trigger to close the connection event   
+* 8. Trigger to close the connection event   
 > Server server.OnClose (connectId);   
 > Client client.OnClose ();   
 
@@ -91,13 +94,16 @@ Paket CLI:paket add socket.core
 * 4.发送消息   
 	>服务端 server.Send(connectId,data,offset,length);  
 	>客户端 client.Send(data,offset,length);
-* 5.触发接收事件  
+* 5.触发已发送事件   
+	>服务端 server.OnSend(connectId,length);   
+	>客户端 client.OnSend(length);  
+* 6.触发接收事件    
 	>服务端 server.OnReceive(connectId, data);  
 	>客户端 client.OnReceive(data);  
-* 6.关闭连接  
+* 7.关闭连接  
 	>服务端 server.Close(connectId);   
 	>客户端 client.Close();   
-* 7.触发关闭连接事件   
+* 8.触发关闭连接事件   
 	>服务端 server.OnClose(connectId);   
 	>客户端 client.OnClose();    
 

@@ -144,9 +144,7 @@ namespace socket.core.Server
             listenSocket.Listen(1000);
             //在监听套接字上接受
             StartAccept(null);
-            //发送线程池
-            ThreadPool.SetMinThreads(1, 1);
-            ThreadPool.SetMaxThreads(workingThreadNumber, workingThreadNumber);
+            //发送线程池           
             for (int i = 1; i <= workingThreadNumber; i++)
             {
                 ThreadPool.QueueUserWorkItem(new WaitCallback(StartSend), i.ToString());
@@ -320,7 +318,7 @@ namespace socket.core.Server
         /// <param name="length">长度</param>
         internal void Send(Guid connectId, byte[] data, int offset, int length)
         {
-            sendQueue.Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });
+            sendQueue.Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });            
         }
 
         /// <summary>

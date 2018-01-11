@@ -123,9 +123,7 @@ namespace socket.core.Client
             {
                 ProcessConnect(connSocketAsyncEventArgs);
             }
-            //发送线程池
-            ThreadPool.SetMinThreads(1, 1);
-            ThreadPool.SetMaxThreads(workingThreadNumber, workingThreadNumber);
+            //发送线程池        
             for (int i = 1; i <= workingThreadNumber; i++)
             {
                 ThreadPool.QueueUserWorkItem(new WaitCallback(StartSend));
@@ -246,7 +244,7 @@ namespace socket.core.Client
                 }
                 else
                 {
-                    Thread.Sleep(20);
+                    Thread.Sleep(2);
                 }
             }
         }
