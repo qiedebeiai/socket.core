@@ -139,7 +139,6 @@ namespace socket.core.Server
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
             //创建listens是传入的套接字。
             listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            Console.WriteLine($"listens{listenSocket.GetHashCode()}");
             listenSocket.NoDelay = true;
             //绑定端口
             listenSocket.Bind(localEndPoint);
