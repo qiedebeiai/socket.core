@@ -120,14 +120,12 @@ namespace socket.core.Server
                 //预先接受端分配一组可重用的消息
                 saea_receive = new SocketAsyncEventArgs();
                 saea_receive.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                saea_receive.UserToken = new AsyncUserToken();
                 //分配缓冲池中的字节缓冲区的socketasynceventarg对象
                 m_bufferManager.SetBuffer(saea_receive);
                 m_receivePool.Push(saea_receive);
-
+                //预先发送端分配一组可重用的消息
                 saea_send = new SocketAsyncEventArgs();
                 saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                saea_send.UserToken = new AsyncUserToken();
                 m_sendPool.Push(saea_send);
             }
         }
@@ -141,6 +139,7 @@ namespace socket.core.Server
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
             //创建listens是传入的套接字。
             listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            Console.WriteLine($"listens{listenSocket.GetHashCode()}");
             listenSocket.NoDelay = true;
             //绑定端口
             listenSocket.Bind(localEndPoint);
@@ -209,6 +208,7 @@ namespace socket.core.Server
                 acceptEventArg.AcceptSocket = null;
             }
             m_maxNumberAcceptedClients.WaitOne();
+            //准备一个客户端接入
             if (!listenSocket.AcceptAsync(acceptEventArg))
             {
                 ProcessAccept(acceptEventArg);
@@ -221,26 +221,24 @@ namespace socket.core.Server
         /// <param name="e">操作对象</param>
         private void ProcessAccept(SocketAsyncEventArgs e)
         {
-            //从接受端重用池获取一个新的SocketAsyncEventArgs对象
-            SocketAsyncEventArgs receiveEventArgs = m_receivePool.Pop();
-            ((AsyncUserToken)receiveEventArgs.UserToken).Socket = e.AcceptSocket;
-            //一旦客户机连接，就向连接发送一个接收。
-            if (!e.AcceptSocket.ReceiveAsync(receiveEventArgs))
-            {
-                ProcessReceive(receiveEventArgs);
-            }
             //把连接到的客户端信息添加到集合中
             ConnectClient connecttoken = new ConnectClient();
             connecttoken.connectId = Guid.NewGuid();
             connecttoken.socket = e.AcceptSocket;
-            connecttoken.saea_receive = receiveEventArgs;
+            //从接受端重用池获取一个新的SocketAsyncEventArgs对象
+            connecttoken.saea_receive = m_receivePool.Pop();
             connectClient.Add(connecttoken);
-            //回调
+            //一旦客户机连接，就准备接收。
+            if (!e.AcceptSocket.ReceiveAsync(connecttoken.saea_receive))
+            {
+                ProcessReceive(connecttoken.saea_receive);
+            }           
+            //事件回调
             if (OnAccept != null)
             {
                 OnAccept(connecttoken.connectId);
             }
-            // 接受第二连接的要求
+            //接受第二连接的请求
             StartAccept(e);
         }
                 
@@ -253,37 +251,43 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="e">操作对象</param>
         private void ProcessReceive(SocketAsyncEventArgs e)
-        {
+        {            
             //检查远程主机是否关闭连接
-            AsyncUserToken token = (AsyncUserToken)e.UserToken;
             if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
-            {
-                //回调               
-                if (OnReceive != null)
+            {                
+                ConnectClient client = connectClient.FirstOrDefault(P => P.saea_receive == e);
+                if(client==null)
                 {
-                    ConnectClient connect = connectClient.FirstOrDefault(P => P.saea_receive == e);
-                    if (connect != null)
-                    {
-                        OnReceive(connect.connectId, e.Buffer, e.Offset, e.BytesTransferred);
-                    }
+                    return;
                 }
                 //如果接收到数据，超时记录设置为0
                 if (overtime > 0)
                 {
-                    ConnectClient client = connectClient.FirstOrDefault(P => P.saea_receive == e);
                     if (client != null)
                     {
                         client.keep_alive = 0;
                     }
                 }
-                //将收到的数据回显给客户端             
-                if (!token.Socket.ReceiveAsync(e))
+                //回调               
+                if (OnReceive != null)
                 {
-                    ProcessReceive(e);
+                    if (client != null)
+                    {
+                        OnReceive(client.connectId, e.Buffer, e.Offset, e.BytesTransferred);
+                    }
                 }
+                //准备下次接收数据      
+                if (client.socket.Connected==true)
+                {                       
+                    if (!client.socket.ReceiveAsync(e))
+                    {
+                        ProcessReceive(e);
+                    }
+                }                
             }
             else
             {
+                Console.WriteLine($"断开----{e.GetHashCode()}");
                 CloseClientSocket(e);
             }
         }
@@ -329,8 +333,8 @@ namespace socket.core.Server
         /// <param name="sendQuere">发送消息体</param>
         private void Send(SendingQueue sendQuere)
         {
-            ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == sendQuere.connectId);
-            if (connect == null|| connect.socket.Connected==false)
+            ConnectClient client = connectClient.FirstOrDefault(P => P.connectId == sendQuere.connectId);
+            if (client == null||client.socket.Connected==false)
             {
                 return;
             }
@@ -340,15 +344,13 @@ namespace socket.core.Server
             {
                 SocketAsyncEventArgs saea_send = new SocketAsyncEventArgs();
                 saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                saea_send.UserToken = new AsyncUserToken();
                 m_sendPool.Push(saea_send);
             }
             SocketAsyncEventArgs sendEventArgs = m_sendPool.Pop();
             mutex.ReleaseMutex();
-            ((AsyncUserToken)sendEventArgs.UserToken).Socket = connect.socket;
-            ((AsyncUserToken)sendEventArgs.UserToken).connectId = sendQuere.connectId;
+            sendEventArgs.UserToken = client.connectId;
             sendEventArgs.SetBuffer(sendQuere.data, sendQuere.offset, sendQuere.length);
-            if (!connect.socket.SendAsync(sendEventArgs))
+            if (!client.socket.SendAsync(sendEventArgs))
             {
                 ProcessSend(sendEventArgs);
             }
@@ -363,10 +365,9 @@ namespace socket.core.Server
             if (e.SocketError == SocketError.Success)
             {
                 m_sendPool.Push(e);
-                Guid connectId = ((AsyncUserToken)e.UserToken).connectId;
                 if (OnSend != null)
                 {
-                    OnSend(connectId, e.BytesTransferred);
+                    OnSend((Guid)e.UserToken, e.BytesTransferred);
                 }
             }
             else
@@ -388,7 +389,7 @@ namespace socket.core.Server
             switch (e.LastOperation)
             {
                 case SocketAsyncOperation.Receive:
-                    ProcessReceive(e);
+                    ProcessReceive(e);                    
                     break;
                 case SocketAsyncOperation.Send:
                     ProcessSend(e);
@@ -397,7 +398,7 @@ namespace socket.core.Server
                     ProcessAccept(e);
                     break;
                 default:
-                    throw new ArgumentException("套接字上完成的最后一个操作不是接收或发送。");
+                    break;
             }
         }
 
@@ -424,49 +425,23 @@ namespace socket.core.Server
         /// <param name="e">操作对象</param>
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
-            AsyncUserToken token = e.UserToken as AsyncUserToken;
-            if (!token.Socket.Connected)
-            {
-                return;
-            }
-            // 关闭与客户端关联的套接字
-            try
-            {
-                token.Socket.Shutdown(SocketShutdown.Both);
-            }
-            // 抛出客户端进程已经关闭
-            catch (Exception) { }
-            token.Socket.Close();
-            m_maxNumberAcceptedClients.Release();
-            //释放SocketAsyncEventArgs，以便其他客户端可以重用它们
             if (e.LastOperation == SocketAsyncOperation.Receive)
             {
-                //客户端发启断开连接
-                m_receivePool.Push(e);
                 ConnectClient conn = connectClient.FirstOrDefault(P => P.saea_receive == e);
-                if (conn != null)
+                if(conn==null)
                 {
-                    if (OnClose != null)
-                    {
-                        OnClose(conn.connectId);
-                    }
-                    connectClient.TryTake(out conn);
+                    return;
                 }
-            }
-            else if (e.LastOperation == SocketAsyncOperation.Send)
-            {
-                //服务端发启断开连接
-                m_sendPool.Push(e);
-                Guid connectId = ((AsyncUserToken)e.UserToken).connectId;
-                ConnectClient conn = connectClient.FirstOrDefault(P => P.connectId == connectId);
-                if (conn != null)
+                try
                 {
-                    if (OnClose != null)
-                    {
-                        OnClose.BeginInvoke(conn.connectId, null, null);
-                    }
-                    connectClient.TryTake(out conn);
+                    conn.socket.Shutdown(SocketShutdown.Both);
                 }
+                // 抛出客户端进程已经关闭
+                catch (Exception) { }               
+                conn.socket.Close();
+                m_receivePool.Push(e);              
+                connectClient.TryTake(out conn);
+                m_maxNumberAcceptedClients.Release();
             }
         }
 
