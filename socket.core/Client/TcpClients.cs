@@ -21,7 +21,7 @@ namespace socket.core.Client
         /// <summary>
         /// 发送端SocketAsyncEventArgs对象重用池，发送套接字操作
         /// </summary>
-        private SocketAsyncEventArgsPool m_sendPool;       
+        private SocketAsyncEventArgsPool m_sendPool;
         /// <summary>
         /// 用于每个套接字I/O操作的缓冲区大小
         /// </summary>
@@ -69,7 +69,7 @@ namespace socket.core.Client
         {
             get
             {
-                if(socket==null)
+                if (socket == null)
                 {
                     return false;
                 }
@@ -95,16 +95,6 @@ namespace socket.core.Client
         {
             buffer_receive = new byte[m_receiveBufferSize];
             sendQueue = new ConcurrentQueue<SendingQueue>();
-            //分配的发送对象池socketasynceventargs，不分配缓存
-            SocketAsyncEventArgs saea_send;
-            for (int i = 0; i < m_minSendSocketAsyncEventArgs; i++)
-            {
-                //预先发送端分配一组可重用的消息
-                saea_send = new SocketAsyncEventArgs();
-                saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                saea_send.UserToken = new AsyncUserToken();
-                m_sendPool.Push(saea_send);
-            }
         }
 
         /// <summary>
@@ -125,14 +115,14 @@ namespace socket.core.Client
             }
             IPEndPoint localEndPoint = new IPEndPoint(ipaddr, port);
             socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            socket.NoDelay = true;
             SocketAsyncEventArgs connSocketAsyncEventArgs = new SocketAsyncEventArgs();
-            connSocketAsyncEventArgs.AcceptSocket = socket;
             connSocketAsyncEventArgs.RemoteEndPoint = localEndPoint;
             connSocketAsyncEventArgs.Completed += IO_Completed;
             if (!socket.ConnectAsync(connSocketAsyncEventArgs))
             {
                 ProcessConnect(connSocketAsyncEventArgs);
-            }            
+            }
         }
 
         /// <summary>
@@ -145,10 +135,9 @@ namespace socket.core.Client
             if (e.SocketError == SocketError.Success)
             {
                 receiveSocketAsyncEventArgs = new SocketAsyncEventArgs();
-                receiveSocketAsyncEventArgs.AcceptSocket = e.AcceptSocket;
                 receiveSocketAsyncEventArgs.SetBuffer(buffer_receive, 0, buffer_receive.Length);
                 receiveSocketAsyncEventArgs.Completed += IO_Completed;
-                if (!e.AcceptSocket.ReceiveAsync(receiveSocketAsyncEventArgs))
+                if (!socket.ReceiveAsync(receiveSocketAsyncEventArgs))
                 {
                     ProcessReceive(receiveSocketAsyncEventArgs);
                 }
@@ -162,7 +151,8 @@ namespace socket.core.Client
                     StartSend();
                 }));
                 thread.IsBackground = true;
-                thread.Start();               
+                thread.Priority = ThreadPriority.AboveNormal;
+                thread.Start();
             }
             else
             {
@@ -214,10 +204,13 @@ namespace socket.core.Client
                 {
                     OnReceive(data);
                 }
-                //将收到的数据回显给客户端             
-                if (!e.AcceptSocket.ReceiveAsync(e))
+                //将收到的数据回显给客户端  
+                if (socket.Connected == true)
                 {
-                    ProcessReceive(e);
+                    if (!socket.ReceiveAsync(e))
+                    {
+                        ProcessReceive(e);
+                    }
                 }
             }
             else
@@ -226,7 +219,7 @@ namespace socket.core.Client
             }
         }
         #endregion
-        
+
         #region 发送
 
         /// <summary>
@@ -246,7 +239,7 @@ namespace socket.core.Client
         /// </summary>
         private void StartSend()
         {
-            while (Connected)
+            while (true)
             {
                 SendingQueue sending;
                 if (sendQueue.TryDequeue(out sending))
@@ -268,20 +261,22 @@ namespace socket.core.Client
         /// <param name="length">长度</param>
         internal void Send(SendingQueue sendQuere)
         {
+            if (!socket.Connected)
+            {
+                return;
+            }
             mutex.WaitOne();
             //如果发送池为空时，临时新建一个放入池中
             if (m_sendPool.Count == 0)
             {
                 SocketAsyncEventArgs saea_send = new SocketAsyncEventArgs();
                 saea_send.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                saea_send.UserToken = new AsyncUserToken();
                 m_sendPool.Push(saea_send);
             }
             SocketAsyncEventArgs sendEventArgs = m_sendPool.Pop();
             mutex.ReleaseMutex();
-            sendEventArgs.AcceptSocket = socket;
             sendEventArgs.SetBuffer(sendQuere.data, sendQuere.offset, sendQuere.length);
-            if (!sendEventArgs.AcceptSocket.SendAsync(sendEventArgs))
+            if (!socket.SendAsync(sendEventArgs))
             {
                 ProcessSend(sendEventArgs);
             }
@@ -300,10 +295,6 @@ namespace socket.core.Client
                 {
                     OnSend(e.BytesTransferred);
                 }
-            }
-            else
-            {
-                CloseClientSocket(e);
             }
         }
 
@@ -324,22 +315,24 @@ namespace socket.core.Client
         /// <param name="e">操作对象</param>
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
-            if (socket.Connected)
+            if (!socket.Connected)
             {
                 return;
             }
-            // 关闭与客户端关联的套接字
-            try
+            if (e.LastOperation == SocketAsyncOperation.Receive)
             {
-                socket.Shutdown(SocketShutdown.Both);
-            }
-            // 抛出客户端进程已经关闭
-            catch (Exception) { }
-            socket.Close();
-            m_sendPool.Clear();
-            if (OnClose != null)
-            {
-                OnClose();
+                // 关闭与客户端关联的套接字
+                try
+                {
+                    socket.Shutdown(SocketShutdown.Both);
+                }
+                // 抛出客户端进程已经关闭
+                catch (Exception) { }
+                socket.Close();
+                if (OnClose != null)
+                {
+                    OnClose();
+                }
             }
         }
         #endregion  

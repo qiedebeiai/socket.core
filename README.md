@@ -1,6 +1,6 @@
 ﻿socket.core
 ===
-This is a socket framework written based on C # standard2.0, the interface design is simple, separate thread operation, does not affect the caller. Can be used in the net Framework 4.x.x / standard assembly, in the window (IOCP) / linux normal operation.
+This is a socket framework based on C # net standard2.0 write, can be used for .NET Framework / dotnet core assembly, can run in window (IOCP) / linux (epoll) .Use asynchronous connection, asynchronous send, asynchronous receive, Performance burst tables, and pass the stress test.  
 ---
 
 下面有中文文档     
@@ -68,7 +68,7 @@ Server other methods introduced
 socket.core  
 ===
 
-这是一个基于C# standard2.0 写的socket框架，接口设计简单，单独线程运行,不影响调用方。可使用于net Framework 4.x.x/standard程序集，能在window(IOCP)/linux正常运行.
+这是一个基于C# .net standard2.0 写的socket框架，可使用于.net Framework/dotnet core程序集，能在window(IOCP)/linux(epoll)运行.使用异步连接，异步发送，异步接收，性能爆表，并且通过压力测试。   
 ---
 安装NuGet:  
 Package Manager: Install-Package socket.core   

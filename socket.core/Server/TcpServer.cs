@@ -152,6 +152,7 @@ namespace socket.core.Server
                 StartSend();
             }));
             thread.IsBackground = true;
+            thread.Priority = ThreadPriority.AboveNormal;
             thread.Start();
             //超时机制
             if (overtime > 0)

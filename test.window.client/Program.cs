@@ -28,7 +28,7 @@ namespace test.window.client
             byte[] data = Encoding.UTF8.GetBytes(senddata);
 
 
-            //单个实现测试
+            ////单个实现测试
             Push client = new Push(receiveBufferSize, ip, port);
             //Pull client = new Pull(receiveBufferSize, ip, port);
             //Pack client = new Pack(receiveBufferSize, ip, port, 0xff);
@@ -36,6 +36,9 @@ namespace test.window.client
             {
                 client.Send(data, 0, data.Length);
             }
+
+            //Thread.Sleep(1000*10);
+            //client.Close();
 
             //多线程测试
 
@@ -83,7 +86,7 @@ namespace test.window.client
 
 
             //多对象测试
-            //for (int j = 0; j < 20; j++)
+            //for (int j = 0; j < 200; j++)
             //{
             //    Push client2 = new Push(receiveBufferSize, ip, port);
             //    //Pull client2 = new Pull(receiveBufferSize, ip, port);

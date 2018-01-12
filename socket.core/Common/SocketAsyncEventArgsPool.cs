@@ -65,10 +65,10 @@ namespace socket.core.Common
         /// <summary>
         /// 清空
         /// </summary>
-        public void Clear()
-        {
-            m_pool.Clear();
-        }
+        //public void Clear()
+        //{
+        //    m_pool.Clear();
+        //}
 
     }
 }

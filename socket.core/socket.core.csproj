@@ -15,7 +15,7 @@
     <Copyright>fengma_312@163.com</Copyright>
     <PackageReleaseNotes>使用线程进行异步发送</PackageReleaseNotes>
     <RepositoryType>socket.core</RepositoryType>
-    <Version>1.0.7</Version>
+    <Version>1.0.8</Version>
   </PropertyGroup>
 
 </Project>
