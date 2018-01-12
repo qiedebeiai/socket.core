@@ -61,14 +61,5 @@ namespace socket.core.Common
         {
             get { return m_pool.Count; }
         }
-
-        /// <summary>
-        /// 清空
-        /// </summary>
-        //public void Clear()
-        //{
-        //    m_pool.Clear();
-        //}
-
     }
 }

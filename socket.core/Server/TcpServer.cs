@@ -277,7 +277,7 @@ namespace socket.core.Server
                     }
                 }
                 //准备下次接收数据      
-                if (client.socket.Connected==true)
+                //if (client.socket.Connected==true)
                 {                       
                     if (!client.socket.ReceiveAsync(e))
                     {
@@ -442,6 +442,10 @@ namespace socket.core.Server
                 m_receivePool.Push(e);              
                 connectClient.TryTake(out conn);
                 m_maxNumberAcceptedClients.Release();
+            }
+            else
+            {
+
             }
         }
 
