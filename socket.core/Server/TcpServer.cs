@@ -277,13 +277,20 @@ namespace socket.core.Server
                     }
                 }
                 //准备下次接收数据      
-                //if (client.socket.Connected==true)
+                try
                 {                       
                     if (!client.socket.ReceiveAsync(e))
                     {
                         ProcessReceive(e);
                     }
-                }                
+                }    
+                catch(ObjectDisposedException ex)
+                {
+                    if (OnClose != null)
+                    {
+                        OnClose(client.connectId);
+                    }
+                }
             }
             else
             {
@@ -350,10 +357,20 @@ namespace socket.core.Server
             mutex.ReleaseMutex();
             sendEventArgs.UserToken = client.connectId;
             sendEventArgs.SetBuffer(sendQuere.data, sendQuere.offset, sendQuere.length);
-            if (!client.socket.SendAsync(sendEventArgs))
+            try
             {
-                ProcessSend(sendEventArgs);
+                if (!client.socket.SendAsync(sendEventArgs))
+                {
+                    ProcessSend(sendEventArgs);
+                }
             }
+            catch (ObjectDisposedException ex)
+            {
+                if (OnClose != null)
+                {
+                    OnClose(client.connectId);
+                }
+            }          
         }
 
         /// <summary>
@@ -442,6 +459,10 @@ namespace socket.core.Server
                 m_receivePool.Push(e);              
                 connectClient.TryTake(out conn);
                 m_maxNumberAcceptedClients.Release();
+                if(OnClose!=null)
+                {
+                    OnClose(conn.connectId);
+                }
             }
             else
             {
