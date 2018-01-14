@@ -52,7 +52,7 @@ Three models introduction
 * Three: pack  
     > pack The model component is a combination of the push and pull models. The application does not have to deal with subcontracts. The component guarantees that every application server.OnReceive (connectId, data) /client.OnReceive (data) event provides the application with a Complete data package
 Note: The pack model component automatically adds a 4-byte (32-bit) header to each packet sent by the application. When the component receives the data, it is automatically packetized based on the header information. Each complete packet is sent to OnReceive The event is sent to the application
-PACK header format  
+PACK header format(4 byte)4*8=32   
 XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY  
 The first 10 X bits are the header identification bits, which are used for data packet verification. The effective header identification value ranges from 0 to 1023 (0x3FF). When the header identification equals 0, the header is not checked. The last 22 bits of Y are length bits. Package length. The maximum valid packet length can not exceed 4194303 (0x3FFFFF) bytes (bytes), the application can be set by the TcpPackServer / TcpPackClient constructor parameter headerFlag  
 
@@ -64,6 +64,7 @@ Server other methods introduced
 
 
 2017/12/27  
+Technology is to share, we make progress together    
 
 socket.core  
 ===
@@ -115,7 +116,7 @@ Paket CLI:paket add socket.core
 * 三:pack   
     >pack模型组件是push和pull模型的结合体，应用程序不必要处理分包/合包，组件保证每个server.OnReceive(connectId,data)/client.OnReceive(data)事件都向应用程序提供一个完整的数据包   
 	注：pack模型组件会对应用程序发送的每个数据包自动加上4个字节(32bit)的包头，组件接收到数据时，根据包头信息自动分包，每个完整的数据包通过OnReceive(connectId, data)事件发送给应用程序   
-	PACK包头格式   
+	PACK包头格式(4字节)4*8=32    
 	XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY   
 	前10位X为包头标识位，用于数据包校验，有效包头标识取值范围0~1023(0x3FF),当包头标识等于0时，不校验包头，后22位Y为长度位，记录包体长度。有效数据包最大长度不能超过4194303（0x3FFFFF）字节(byte),应用程序可以通过TcpPackServer/TcpPackClient构造函数参数headerFlag设置
 
@@ -127,3 +128,5 @@ Paket CLI:paket add socket.core
 
 	  
 	2017/12/27
+	
+	技术在于分享,大家共同进步   
