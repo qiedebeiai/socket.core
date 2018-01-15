@@ -54,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\socket.core\socket.core.csproj">
-      <Project>{10943273-9bd8-4ef7-a287-554555384ef5}</Project>
+      <Project>{366d4b2c-3fe5-4ddd-94a4-49913ea812cf}</Project>
       <Name>socket.core</Name>
     </ProjectReference>
   </ItemGroup>

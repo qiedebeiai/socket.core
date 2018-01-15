@@ -13,9 +13,9 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>socket Async Cache Pool C# core socket.core</PackageTags>
     <Copyright>fengma_312@163.com</Copyright>
-    <PackageReleaseNotes>使用线程进行异步发送</PackageReleaseNotes>
+    <PackageReleaseNotes>修改服务端bug</PackageReleaseNotes>
     <RepositoryType>socket.core</RepositoryType>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
   </PropertyGroup>
 
 </Project>

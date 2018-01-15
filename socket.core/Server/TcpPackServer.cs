@@ -44,17 +44,17 @@ namespace socket.core.Server
         /// <summary>
         /// 连接状态下的客户端列表
         /// </summary>
-        public ConcurrentBag<ConnectClient> ConnectClient
-        {
-            get
-            {
-                if (tcpServer == null)
-                {
-                    return null;
-                }
-                return tcpServer.connectClient;
-            }
-        }
+        //public ConcurrentBag<ConnectClient> ConnectClient
+        //{
+        //    get
+        //    {
+        //        if (tcpServer == null)
+        //        {
+        //            return null;
+        //        }
+        //        return tcpServer.connectClient;
+        //    }
+        //}
 
         /// <summary>
         /// 设置基本配置

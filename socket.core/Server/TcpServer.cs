@@ -46,7 +46,7 @@ namespace socket.core.Server
         /// <summary>
         /// 超时检查间隔时间(秒)
         /// </summary>
-        private int overtimecheck = 10;
+        private int overtimecheck = 1;
         /// <summary>
         /// 能接到最多客户端个数的原子操作
         /// </summary>
@@ -54,7 +54,7 @@ namespace socket.core.Server
         /// <summary>
         /// 已经连接的对象池
         /// </summary>
-        internal ConcurrentBag<ConnectClient> connectClient;
+        internal ConcurrentDictionary<Guid,ConnectClient> connectClient;
         /// <summary>
         /// 需要发送的数据
         /// </summary>
@@ -107,7 +107,7 @@ namespace socket.core.Server
         /// </summary>
         private void Init()
         {
-            connectClient = new ConcurrentBag<ConnectClient>();
+            connectClient = new ConcurrentDictionary<Guid, ConnectClient>();
             sendQueue = new ConcurrentQueue<SendingQueue>();
             //分配一个大字节缓冲区，所有I/O操作都使用一个。这个侍卫对内存碎片
             m_bufferManager.InitBuffer();
@@ -175,13 +175,15 @@ namespace socket.core.Server
             int count = overtime / overtimecheck;
             while (true)
             {
-                ConnectClient client = connectClient.FirstOrDefault(P => P.keep_alive >= count);
-                if (client != null)
+                foreach (var item in connectClient.Values)
                 {
-                    client.keep_alive = 0;
-                    CloseClientSocket(client.saea_receive);
+                    if(item.keep_alive >= count)
+                    {
+                        item.keep_alive = 0;
+                        CloseClientSocket(item.saea_receive);
+                    }                   
                 }
-                foreach (var item in connectClient)
+                foreach (var item in connectClient.Values)
                 {
                     item.keep_alive++;
                 }
@@ -220,14 +222,17 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="e">操作对象</param>
         private void ProcessAccept(SocketAsyncEventArgs e)
-        {
+        {            
             //把连接到的客户端信息添加到集合中
             ConnectClient connecttoken = new ConnectClient();
-            connecttoken.connectId = Guid.NewGuid();
+            Guid connectId = Guid.NewGuid();
+            //connecttoken.connectId = Guid.NewGuid();
             connecttoken.socket = e.AcceptSocket;
             //从接受端重用池获取一个新的SocketAsyncEventArgs对象
             connecttoken.saea_receive = m_receivePool.Pop();
-            connectClient.Add(connecttoken);
+            connecttoken.saea_receive.UserToken = connectId;
+            connecttoken.saea_receive.AcceptSocket = e.AcceptSocket;            
+            connectClient.TryAdd(connectId, connecttoken);
             //一旦客户机连接，就准备接收。
             if (!e.AcceptSocket.ReceiveAsync(connecttoken.saea_receive))
             {
@@ -236,7 +241,7 @@ namespace socket.core.Server
             //事件回调
             if (OnAccept != null)
             {
-                OnAccept(connecttoken.connectId);
+                OnAccept(connectId);
             }
             //接受第二连接的请求
             StartAccept(e);
@@ -254,12 +259,13 @@ namespace socket.core.Server
         {            
             //检查远程主机是否关闭连接
             if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
-            {                
-                ConnectClient client = connectClient.FirstOrDefault(P => P.saea_receive == e);
-                if(client==null)
+            {
+                Guid connectId = (Guid)e.UserToken;
+                ConnectClient client;
+                if(!connectClient.TryGetValue(connectId, out client))
                 {
                     return;
-                }
+                }               
                 //如果接收到数据，超时记录设置为0
                 if (overtime > 0)
                 {
@@ -273,13 +279,13 @@ namespace socket.core.Server
                 {
                     if (client != null)
                     {
-                        OnReceive(client.connectId, e.Buffer, e.Offset, e.BytesTransferred);
+                        OnReceive(connectId, e.Buffer, e.Offset, e.BytesTransferred);
                     }
                 }
                 //准备下次接收数据      
                 try
                 {                       
-                    if (!client.socket.ReceiveAsync(e))
+                    if (!e.AcceptSocket.ReceiveAsync(e))
                     {
                         ProcessReceive(e);
                     }
@@ -288,13 +294,12 @@ namespace socket.core.Server
                 {
                     if (OnClose != null)
                     {
-                        OnClose(client.connectId);
+                        OnClose(connectId);
                     }
                 }
             }
             else
             {
-                Console.WriteLine($"断开----{e.GetHashCode()}");
                 CloseClientSocket(e);
             }
         }
@@ -331,7 +336,7 @@ namespace socket.core.Server
         /// <param name="length">长度</param>
         internal void Send(Guid connectId, byte[] data, int offset, int length)
         {
-            sendQueue.Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });          
+            sendQueue.Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });
         }
 
         /// <summary>
@@ -340,8 +345,8 @@ namespace socket.core.Server
         /// <param name="sendQuere">发送消息体</param>
         private void Send(SendingQueue sendQuere)
         {
-            ConnectClient client = connectClient.FirstOrDefault(P => P.connectId == sendQuere.connectId);
-            if (client == null||client.socket.Connected==false)
+            ConnectClient client;
+            if(!connectClient.TryGetValue(sendQuere.connectId,out client))
             {
                 return;
             }
@@ -355,7 +360,7 @@ namespace socket.core.Server
             }
             SocketAsyncEventArgs sendEventArgs = m_sendPool.Pop();
             mutex.ReleaseMutex();
-            sendEventArgs.UserToken = client.connectId;
+            sendEventArgs.UserToken = sendQuere.connectId;
             sendEventArgs.SetBuffer(sendQuere.data, sendQuere.offset, sendQuere.length);
             try
             {
@@ -368,9 +373,10 @@ namespace socket.core.Server
             {
                 if (OnClose != null)
                 {
-                    OnClose(client.connectId);
+                    OnClose(sendQuere.connectId);
                 }
-            }          
+            }
+            sendQuere = null;
         }
 
         /// <summary>
@@ -428,12 +434,12 @@ namespace socket.core.Server
         /// <param name="connectId">连接标记</param>
         internal void Close(Guid connectId)
         {
-            ConnectClient conn = connectClient.FirstOrDefault(P => P.connectId == connectId);
-            if (conn == null)
+            ConnectClient client;
+            if(!connectClient.TryGetValue(connectId ,out client))
             {
                 return;
-            }
-            CloseClientSocket(conn.saea_receive);
+            }           
+            CloseClientSocket(client.saea_receive);
         }
 
         /// <summary>
@@ -444,29 +450,31 @@ namespace socket.core.Server
         {
             if (e.LastOperation == SocketAsyncOperation.Receive)
             {
-                ConnectClient conn = connectClient.FirstOrDefault(P => P.saea_receive == e);
-                if(conn==null)
+                Guid connectId = (Guid)e.UserToken;
+                ConnectClient client;
+                if (!connectClient.TryGetValue(connectId, out client))
+                {
+                    return;
+                }    
+                if(client.socket.Connected==false)
                 {
                     return;
                 }
                 try
                 {
-                    conn.socket.Shutdown(SocketShutdown.Both);
+                    client.socket.Shutdown(SocketShutdown.Both);
                 }
                 // 抛出客户端进程已经关闭
-                catch (Exception) { }               
-                conn.socket.Close();
-                m_receivePool.Push(e);              
-                connectClient.TryTake(out conn);
+                catch (Exception) { }
+                client.socket.Close();
+                m_receivePool.Push(e);               
                 m_maxNumberAcceptedClients.Release();
                 if(OnClose!=null)
                 {
-                    OnClose(conn.connectId);
+                    OnClose(connectId);
                 }
-            }
-            else
-            {
-
+                connectClient.TryRemove((Guid)e.UserToken, out client);
+                client = null;
             }
         }
 
@@ -482,12 +490,12 @@ namespace socket.core.Server
         /// <returns>true:设置成功,false:设置失败</returns>
         internal bool SetAttached(Guid connectId, object data)
         {
-            ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
-            if (connect == null)
+            ConnectClient client;
+            if (!connectClient.TryGetValue(connectId, out client))
             {
                 return false;
             }
-            connect.attached = data;
+            client.attached = data;
             return true;
         }
 
@@ -498,14 +506,14 @@ namespace socket.core.Server
         /// <returns>附加数据，如果没有找到则返回null</returns>
         internal T GetAttached<T>(Guid connectId)
         {
-            ConnectClient connect = connectClient.FirstOrDefault(P => P.connectId == connectId);
-            if (connect == null|| connect.attached==null)
+            ConnectClient client;
+            if (!connectClient.TryGetValue(connectId, out client))
             {
-                return default(T);
-            }
+                return default(T); 
+            }         
             else
             {
-                return (T)connect.attached;
+                return (T)client.attached;
             }
         }
         #endregion

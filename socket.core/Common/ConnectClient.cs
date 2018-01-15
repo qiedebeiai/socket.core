@@ -9,11 +9,7 @@ namespace socket.core.Common
     /// 已经连接的客户端
     /// </summary>
     public class ConnectClient
-    {
-        /// <summary>
-        /// 连接ID
-        /// </summary>
-        public Guid connectId { get; set; }
+    {       
         /// <summary>
         /// 套接字
         /// </summary>
