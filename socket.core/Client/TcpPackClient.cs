@@ -59,9 +59,9 @@ namespace socket.core.Client
         /// </summary>   
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>
         /// <param name="headerFlag">包头标记范围0~1023(0x3FF),当包头标识等于0时，不校验包头</param>
-        public TcpPackClient( int receiveBufferSize,uint headerFlag)
+        public TcpPackClient(int receiveBufferSize, uint headerFlag)
         {
-            if(headerFlag<0|| headerFlag>1023)
+            if (headerFlag < 0 || headerFlag > 1023)
             {
                 headerFlag = 0;
             }
@@ -69,7 +69,7 @@ namespace socket.core.Client
             Thread thread = new Thread(new ThreadStart(() =>
             {
                 queue = new List<byte>();
-                tcpClients = new TcpClients( receiveBufferSize);
+                tcpClients = new TcpClients(receiveBufferSize);
                 tcpClients.OnConnect += TcpServer_eventactionConnect;
                 tcpClients.OnReceive += TcpServer_eventactionReceive;
                 tcpClients.OnClose += TcpServer_eventClose;
@@ -83,13 +83,13 @@ namespace socket.core.Client
         /// </summary>
         /// <param name="ip">ip地址或域名</param>
         /// <param name="port">端口</param>
-        public void Connect(string ip,int port)
+        public void Connect(string ip, int port)
         {
             while (tcpClients == null)
             {
                 Thread.Sleep(2);
             }
-            tcpClients.Connect(ip,port);
+            tcpClients.Connect(ip, port);
         }
 
         /// <summary>
@@ -128,15 +128,15 @@ namespace socket.core.Client
         /// 接收通知事件方法
         /// </summary>
         /// <param name="data">数据</param>
-        private void TcpServer_eventactionReceive( byte[] data)
+        private void TcpServer_eventactionReceive(byte[] data)
         {
             if (OnReceive != null)
-            {               
+            {
                 queue.AddRange(data);
-                byte[] datas=Read();
-                if(datas != null&& datas.Length>0)
+                byte[] datas = Read();
+                if (datas != null && datas.Length > 0)
                 {
-                    OnReceive( datas);
+                    OnReceive(datas);
                 }
             }
         }
@@ -166,10 +166,10 @@ namespace socket.core.Client
         /// <returns></returns>
         private byte[] AddHead(byte[] data)
         {
-            uint len =(uint)data.Length;
+            uint len = (uint)data.Length;
             uint header = (headerFlag << 22) | len;
-            byte[] head=System.BitConverter.GetBytes(header);
-            return head.Concat(data).ToArray();           
+            byte[] head = System.BitConverter.GetBytes(header);
+            return head.Concat(data).ToArray();
         }
 
         /// <summary>

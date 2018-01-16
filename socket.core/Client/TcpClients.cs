@@ -151,7 +151,7 @@ namespace socket.core.Client
                     StartSend();
                 }));
                 thread.IsBackground = true;
-                thread.Priority = ThreadPriority.AboveNormal;
+                thread.Priority = ThreadPriority.Highest;
                 thread.Start();
             }
             else

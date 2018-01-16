@@ -16,6 +16,10 @@ namespace socket.core.Server
     internal class TcpServer
     {
         /// <summary>
+        /// 连接标示 自增长
+        /// </summary>
+        private int connectId;
+        /// <summary>
         /// 同时处理的最大连接数
         /// </summary>
         private int m_numConnections;
@@ -54,11 +58,15 @@ namespace socket.core.Server
         /// <summary>
         /// 已经连接的对象池
         /// </summary>
-        internal ConcurrentDictionary<Guid,ConnectClient> connectClient;
+        internal ConcurrentDictionary<int, ConnectClient> connectClient;
+        /// <summary>
+        /// 发送线程数
+        /// </summary>
+        private int sendthread = 10;
         /// <summary>
         /// 需要发送的数据
         /// </summary>
-        private ConcurrentQueue<SendingQueue> sendQueue;
+        private ConcurrentQueue<SendingQueue>[] sendQueues;
         /// <summary>
         /// 发送队列锁
         /// </summary>
@@ -70,19 +78,19 @@ namespace socket.core.Server
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        internal event Action<Guid> OnAccept;
+        internal event Action<int> OnAccept;
         /// <summary>
         /// 接收通知事件
         /// </summary>
-        internal event Action<Guid, byte[], int, int> OnReceive;
+        internal event Action<int, byte[], int, int> OnReceive;
         /// <summary>
         /// 已送通知事件
         /// </summary>
-        internal event Action<Guid, int> OnSend;
+        internal event Action<int, int> OnSend;
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
-        internal event Action<Guid> OnClose;
+        internal event Action<int> OnClose;
 
         /// <summary>
         /// 设置基本配置
@@ -91,13 +99,13 @@ namespace socket.core.Server
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>
         /// <param name="overtime">超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时</param>
         internal TcpServer(int numConnections, int receiveBufferSize, int overTime)
-        {            
+        {
             overtime = overTime;
             m_numConnections = numConnections;
             m_receiveBufferSize = receiveBufferSize;
             m_bufferManager = new BufferManager(receiveBufferSize * m_numConnections, receiveBufferSize);
             m_receivePool = new SocketAsyncEventArgsPool(m_numConnections);
-            m_sendPool = new SocketAsyncEventArgsPool(m_numConnections);           
+            m_sendPool = new SocketAsyncEventArgsPool(m_numConnections);
             m_maxNumberAcceptedClients = new Semaphore(m_numConnections, m_numConnections);
             Init();
         }
@@ -107,8 +115,12 @@ namespace socket.core.Server
         /// </summary>
         private void Init()
         {
-            connectClient = new ConcurrentDictionary<Guid, ConnectClient>();
-            sendQueue = new ConcurrentQueue<SendingQueue>();
+            connectClient = new ConcurrentDictionary<int, ConnectClient>();
+            sendQueues = new ConcurrentQueue<SendingQueue>[sendthread];
+            for (int i = 0; i < sendthread; i++)
+            {
+                sendQueues[i] = new ConcurrentQueue<SendingQueue>();
+            }
             //分配一个大字节缓冲区，所有I/O操作都使用一个。这个侍卫对内存碎片
             m_bufferManager.InitBuffer();
             //预分配的接受对象池socketasynceventargs，并分配缓存
@@ -147,13 +159,13 @@ namespace socket.core.Server
             //在监听套接字上接受
             StartAccept(null);
             //发送线程
-            Thread thread = new Thread(new ThreadStart(() =>
+            for (int i = 0; i < sendthread; i++)
             {
-                StartSend();
-            }));
-            thread.IsBackground = true;
-            thread.Priority = ThreadPriority.AboveNormal;
-            thread.Start();
+                Thread thread = new Thread(StartSend);
+                thread.IsBackground = true;
+                thread.Priority = ThreadPriority.AboveNormal;
+                thread.Start(i);
+            }
             //超时机制
             if (overtime > 0)
             {
@@ -161,7 +173,7 @@ namespace socket.core.Server
                 {
                     Heartbeat();
                 }));
-                heartbeat.Priority = ThreadPriority.Lowest;
+                heartbeat.Priority = ThreadPriority.Highest;
                 heartbeat.Start();
             }
         }
@@ -177,11 +189,11 @@ namespace socket.core.Server
             {
                 foreach (var item in connectClient.Values)
                 {
-                    if(item.keep_alive >= count)
+                    if (item.keep_alive >= count)
                     {
                         item.keep_alive = 0;
                         CloseClientSocket(item.saea_receive);
-                    }                   
+                    }
                 }
                 foreach (var item in connectClient.Values)
                 {
@@ -222,22 +234,21 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="e">操作对象</param>
         private void ProcessAccept(SocketAsyncEventArgs e)
-        {            
+        {
+            connectId++;
             //把连接到的客户端信息添加到集合中
             ConnectClient connecttoken = new ConnectClient();
-            Guid connectId = Guid.NewGuid();
-            //connecttoken.connectId = Guid.NewGuid();
             connecttoken.socket = e.AcceptSocket;
             //从接受端重用池获取一个新的SocketAsyncEventArgs对象
             connecttoken.saea_receive = m_receivePool.Pop();
             connecttoken.saea_receive.UserToken = connectId;
-            connecttoken.saea_receive.AcceptSocket = e.AcceptSocket;            
+            connecttoken.saea_receive.AcceptSocket = e.AcceptSocket;
             connectClient.TryAdd(connectId, connecttoken);
             //一旦客户机连接，就准备接收。
             if (!e.AcceptSocket.ReceiveAsync(connecttoken.saea_receive))
             {
                 ProcessReceive(connecttoken.saea_receive);
-            }           
+            }
             //事件回调
             if (OnAccept != null)
             {
@@ -246,9 +257,9 @@ namespace socket.core.Server
             //接受第二连接的请求
             StartAccept(e);
         }
-                
+
         #endregion
-        
+
         #region 接受处理 receive
 
         /// <summary>
@@ -256,16 +267,16 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="e">操作对象</param>
         private void ProcessReceive(SocketAsyncEventArgs e)
-        {            
+        {
             //检查远程主机是否关闭连接
             if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
             {
-                Guid connectId = (Guid)e.UserToken;
+                int connectId = (int)e.UserToken;
                 ConnectClient client;
-                if(!connectClient.TryGetValue(connectId, out client))
+                if (!connectClient.TryGetValue(connectId, out client))
                 {
                     return;
-                }               
+                }
                 //如果接收到数据，超时记录设置为0
                 if (overtime > 0)
                 {
@@ -284,13 +295,13 @@ namespace socket.core.Server
                 }
                 //准备下次接收数据      
                 try
-                {                       
+                {
                     if (!e.AcceptSocket.ReceiveAsync(e))
                     {
                         ProcessReceive(e);
                     }
-                }    
-                catch(ObjectDisposedException ex)
+                }
+                catch (ObjectDisposedException ex)
                 {
                     if (OnClose != null)
                     {
@@ -305,24 +316,24 @@ namespace socket.core.Server
         }
 
         #endregion
-        
+
         #region 发送处理 send
 
         /// <summary>
         /// 开始启用发送
         /// </summary>
-        private void StartSend()
+        private void StartSend(object thread)
         {
             while (true)
             {
                 SendingQueue sending;
-                if(sendQueue.TryDequeue(out sending))
+                if (sendQueues[(int)thread].TryDequeue(out sending))
                 {
                     Send(sending);
                 }
                 else
                 {
-                    Thread.Sleep(2);
+                    Thread.Sleep(10);
                 }
             }
         }
@@ -334,9 +345,9 @@ namespace socket.core.Server
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        internal void Send(Guid connectId, byte[] data, int offset, int length)
+        internal void Send(int connectId, byte[] data, int offset, int length)
         {
-            sendQueue.Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });
+            sendQueues[connectId % sendthread].Enqueue(new SendingQueue() { connectId = connectId, data = data, offset = offset, length = length });
         }
 
         /// <summary>
@@ -346,7 +357,7 @@ namespace socket.core.Server
         private void Send(SendingQueue sendQuere)
         {
             ConnectClient client;
-            if(!connectClient.TryGetValue(sendQuere.connectId,out client))
+            if (!connectClient.TryGetValue(sendQuere.connectId, out client))
             {
                 return;
             }
@@ -390,7 +401,7 @@ namespace socket.core.Server
                 m_sendPool.Push(e);
                 if (OnSend != null)
                 {
-                    OnSend((Guid)e.UserToken, e.BytesTransferred);
+                    OnSend((int)e.UserToken, e.BytesTransferred);
                 }
             }
             else
@@ -412,7 +423,7 @@ namespace socket.core.Server
             switch (e.LastOperation)
             {
                 case SocketAsyncOperation.Receive:
-                    ProcessReceive(e);                    
+                    ProcessReceive(e);
                     break;
                 case SocketAsyncOperation.Send:
                     ProcessSend(e);
@@ -432,13 +443,13 @@ namespace socket.core.Server
         /// 客户端断开一个连接
         /// </summary>
         /// <param name="connectId">连接标记</param>
-        internal void Close(Guid connectId)
+        internal void Close(int connectId)
         {
             ConnectClient client;
-            if(!connectClient.TryGetValue(connectId ,out client))
+            if (!connectClient.TryGetValue(connectId, out client))
             {
                 return;
-            }           
+            }
             CloseClientSocket(client.saea_receive);
         }
 
@@ -450,13 +461,13 @@ namespace socket.core.Server
         {
             if (e.LastOperation == SocketAsyncOperation.Receive)
             {
-                Guid connectId = (Guid)e.UserToken;
+                int connectId = (int)e.UserToken;
                 ConnectClient client;
                 if (!connectClient.TryGetValue(connectId, out client))
                 {
                     return;
-                }    
-                if(client.socket.Connected==false)
+                }
+                if (client.socket.Connected == false)
                 {
                     return;
                 }
@@ -467,13 +478,13 @@ namespace socket.core.Server
                 // 抛出客户端进程已经关闭
                 catch (Exception) { }
                 client.socket.Close();
-                m_receivePool.Push(e);               
+                m_receivePool.Push(e);
                 m_maxNumberAcceptedClients.Release();
-                if(OnClose!=null)
+                if (OnClose != null)
                 {
                     OnClose(connectId);
                 }
-                connectClient.TryRemove((Guid)e.UserToken, out client);
+                connectClient.TryRemove((int)e.UserToken, out client);
                 client = null;
             }
         }
@@ -488,7 +499,7 @@ namespace socket.core.Server
         /// <param name="connectId">连接标识</param>
         /// <param name="data">附加数据</param>
         /// <returns>true:设置成功,false:设置失败</returns>
-        internal bool SetAttached(Guid connectId, object data)
+        internal bool SetAttached(int connectId, object data)
         {
             ConnectClient client;
             if (!connectClient.TryGetValue(connectId, out client))
@@ -504,13 +515,13 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标识</param>
         /// <returns>附加数据，如果没有找到则返回null</returns>
-        internal T GetAttached<T>(Guid connectId)
+        internal T GetAttached<T>(int connectId)
         {
             ConnectClient client;
             if (!connectClient.TryGetValue(connectId, out client))
             {
-                return default(T); 
-            }         
+                return default(T);
+            }
             else
             {
                 return (T)client.attached;

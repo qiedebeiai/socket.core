@@ -12,7 +12,7 @@ namespace socket.core.Common
         /// <summary>
         /// 连接标记
         /// </summary>
-        internal Guid connectId { get; set; }
+        internal int connectId { get; set; }
         /// <summary>
         /// 发送的数据
         /// </summary>

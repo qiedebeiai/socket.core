@@ -13,13 +13,13 @@ namespace test.window.client.Client
     {
         private TcpPushClient client;
         Random random = new Random();
-        public Push(int receiveBufferSize,string ip,int port)
+        public Push(int receiveBufferSize, string ip, int port)
         {
             client = new TcpPushClient(receiveBufferSize);
             client.OnConnect += Client_OnConnect;
             client.OnReceive += Client_OnReceive;
             client.OnSend += Client_OnSend;
-            client.OnClose += Client_OnClose;          
+            client.OnClose += Client_OnClose;
             client.Connect(ip, port);
         }
 
@@ -30,7 +30,7 @@ namespace test.window.client.Client
 
         private void Client_OnReceive(byte[] obj)
         {
-            Console.WriteLine($"Push接收长度[{obj.Length}]     {random.Next(1,9999)}");
+            Console.WriteLine($"Push接收长度[{obj.Length}]     {random.Next(1, 9999)}");
         }
 
         private void Client_OnConnect(bool obj)
@@ -43,8 +43,8 @@ namespace test.window.client.Client
             Console.WriteLine($"Push已发送长度{obj}    {random.Next(1, 9999)}");
         }
 
-        public void Send(byte[] data,int offset,int length)
-        {   
+        public void Send(byte[] data, int offset, int length)
+        {
             client.Send(data, offset, length);
         }
 
@@ -52,6 +52,6 @@ namespace test.window.client.Client
         {
             client.Close();
         }
-      
+
     }
 }

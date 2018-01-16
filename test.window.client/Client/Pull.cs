@@ -24,7 +24,7 @@ namespace test.window.client.Client
 
         private void Client_OnReceive(int obj)
         {
-            byte[] data=client.Fetch(obj);
+            byte[] data = client.Fetch(obj);
             Console.WriteLine($"pull接收byte[{data.Length}]");
         }
 

@@ -12,7 +12,7 @@ namespace test.window.client.Client
     public class Pack
     {
         TcpPackClient client;
-        public Pack(int receiveBufferSize, string ip, int port,uint headerFlag)
+        public Pack(int receiveBufferSize, string ip, int port, uint headerFlag)
         {
             client = new TcpPackClient(receiveBufferSize, headerFlag);
             client.OnConnect += Client_OnConnect;
@@ -40,7 +40,7 @@ namespace test.window.client.Client
         public void Send(byte[] data, int offset, int length)
         {
             client.Send(data, offset, length);
-            
+
         }
 
         private void Client_OnSend(int obj)

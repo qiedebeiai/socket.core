@@ -22,37 +22,23 @@ namespace socket.core.Server
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        public event Action<Guid> OnAccept;
+        public event Action<int> OnAccept;
         /// <summary>
         /// 接收通知事件
         /// </summary>
-        public event Action<Guid, int> OnReceive;
+        public event Action<int, int> OnReceive;
         /// <summary>
         /// 发送通知事件
         /// </summary>
-        public event Action<Guid, int> OnSend;
+        public event Action<int, int> OnSend;
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
-        public event Action<Guid> OnClose;
+        public event Action<int> OnClose;
         /// <summary>
         /// 接收到的数据缓存
         /// </summary>
-        private Dictionary<Guid, List<byte>> queue;        
-        /// <summary>
-        /// 连接状态下的客户端列表
-        /// </summary>
-        //public ConcurrentBag<ConnectClient> ConnectClient
-        //{
-        //    get
-        //    {
-        //        if (tcpServer == null)
-        //        {
-        //            return null;
-        //        }
-        //        return tcpServer.connectClient;
-        //    }
-        //}
+        private Dictionary<int, List<byte>> queue;
 
         /// <summary>
         /// 设置基本配置
@@ -64,7 +50,7 @@ namespace socket.core.Server
         {
             Thread thread = new Thread(new ThreadStart(() =>
             {
-                queue = new Dictionary<Guid, List<byte>>();
+                queue = new Dictionary<int, List<byte>>();
                 tcpServer = new TcpServer(numConnections, receiveBufferSize, overtime);
                 tcpServer.OnAccept += TcpServer_eventactionAccept;
                 tcpServer.OnReceive += TcpServer_eventactionReceive;
@@ -74,8 +60,6 @@ namespace socket.core.Server
             thread.IsBackground = true;
             thread.Start();
         }
-
-       
 
         /// <summary>
         /// 开启监听服务
@@ -94,7 +78,7 @@ namespace socket.core.Server
         /// 连接成功事件方法
         /// </summary>
         /// <param name="connectId">连接标记</param>
-        private void TcpServer_eventactionAccept(Guid connectId)
+        private void TcpServer_eventactionAccept(int connectId)
         {
             if (OnAccept != null)
                 OnAccept(connectId);
@@ -107,9 +91,9 @@ namespace socket.core.Server
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        public void Send(Guid connectId, byte[] data, int offset, int length)
+        public void Send(int connectId, byte[] data, int offset, int length)
         {
-            tcpServer.Send(connectId, data, offset, length);            
+            tcpServer.Send(connectId, data, offset, length);
         }
 
         /// <summary>
@@ -117,7 +101,7 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标记</param>
         /// <param name="length">长度</param>
-        private void TcpServer_OnSend(Guid connectId, int length)
+        private void TcpServer_OnSend(int connectId, int length)
         {
             if (OnSend != null)
             {
@@ -130,7 +114,7 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标记</param>
         /// <param name="data">数据</param>
-        private void TcpServer_eventactionReceive(Guid connectId, byte[] data, int offset, int length)
+        private void TcpServer_eventactionReceive(int connectId, byte[] data, int offset, int length)
         {
             if (OnReceive != null)
             {
@@ -150,7 +134,7 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标记</param>
         /// <returns></returns>
-        public int GetLength(Guid connectId)
+        public int GetLength(int connectId)
         {
             if (!queue.ContainsKey(connectId))
             {
@@ -165,7 +149,7 @@ namespace socket.core.Server
         /// <param name="connectId">连接标记</param>
         /// <param name="length">需要获取的长度</param>
         /// <returns></returns>
-        public byte[] Fetch(Guid connectId, int length)
+        public byte[] Fetch(int connectId, int length)
         {
             if (!queue.ContainsKey(connectId))
             {
@@ -176,15 +160,15 @@ namespace socket.core.Server
                 length = queue[connectId].Count;
             }
             byte[] f = queue[connectId].Take(length).ToArray();
-            queue[connectId].RemoveRange(0, length);           
+            queue[connectId].RemoveRange(0, length);
             return f;
         }
 
         /// <summary>
         /// 断开连接
         /// </summary>
-        /// <param name="guid">连接标记</param>
-        public void Close(Guid connectId)
+        /// <param name="int">连接标记</param>
+        public void Close(int connectId)
         {
             tcpServer.Close(connectId);
         }
@@ -193,7 +177,7 @@ namespace socket.core.Server
         /// 断开连接通知事件方法
         /// </summary>
         /// <param name="connectId">连接标记</param>
-        private void TcpServer_eventClose(Guid connectId)
+        private void TcpServer_eventClose(int connectId)
         {
             if (queue.ContainsKey(connectId))
             {
@@ -209,7 +193,7 @@ namespace socket.core.Server
         /// <param name="connectId">连接标识</param>
         /// <param name="data">附加数据</param>
         /// <returns>true:设置成功,false:设置失败</returns>
-        public bool SetAttached(Guid connectId, object data)
+        public bool SetAttached(int connectId, object data)
         {
             return tcpServer.SetAttached(connectId, data);
         }
@@ -219,7 +203,7 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标识</param>
         /// <returns>返回附加数据</returns>
-        public T GetAttached<T>(Guid connectId)
+        public T GetAttached<T>(int connectId)
         {
             return tcpServer.GetAttached<T>(connectId);
         }

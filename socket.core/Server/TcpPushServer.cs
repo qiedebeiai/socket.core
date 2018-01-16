@@ -21,33 +21,19 @@ namespace socket.core.Server
         /// <summary>
         /// 连接成功事件
         /// </summary>
-        public event Action<Guid> OnAccept;
+        public event Action<int> OnAccept;
         /// <summary>
         /// 接收通知事件
         /// </summary>
-        public event Action<Guid, byte[]> OnReceive;
+        public event Action<int, byte[]> OnReceive;
         /// <summary>
         /// 已送通知事件
         /// </summary>
-        public event Action<Guid, int> OnSend;
+        public event Action<int, int> OnSend;
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
-        public event Action<Guid> OnClose;
-        /// <summary>
-        /// 连接状态下的客户端列表
-        /// </summary>
-        //public ConcurrentBag<ConnectClient> ConnectClient
-        //{
-        //    get
-        //    {
-        //        if(tcpServer==null)
-        //        {
-        //            return null;
-        //        }
-        //        return tcpServer.connectClient;
-        //    }            
-        //}
+        public event Action<int> OnClose;
 
         /// <summary>
         /// 设置基本配置
@@ -87,7 +73,7 @@ namespace socket.core.Server
         /// 连接成功事件方法
         /// </summary>
         /// <param name="connectId">连接标记</param>
-        private void TcpServer_eventactionAccept(Guid connectId)
+        private void TcpServer_eventactionAccept(int connectId)
         {
             if (OnAccept != null)
                 OnAccept(connectId);
@@ -100,7 +86,7 @@ namespace socket.core.Server
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        public void Send(Guid connectId, byte[] data, int offset, int length)
+        public void Send(int connectId, byte[] data, int offset, int length)
         {
             tcpServer.Send(connectId, data, offset, length);
         }
@@ -110,7 +96,7 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标记</param>
         /// <param name="length">已发送长度</param>
-        private void TcpServer_OnSend(Guid connectId, int length)
+        private void TcpServer_OnSend(int connectId, int length)
         {
             if (OnSend != null)
                 OnSend(connectId, length);
@@ -123,7 +109,7 @@ namespace socket.core.Server
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        private void TcpServer_eventactionReceive(Guid connectId, byte[] data,int offset,int length)
+        private void TcpServer_eventactionReceive(int connectId, byte[] data,int offset,int length)
         {
             if (OnReceive != null)
             {
@@ -136,8 +122,8 @@ namespace socket.core.Server
         /// <summary>
         /// 断开连接
         /// </summary>
-        /// <param name="guid">连接标记</param>
-        public void Close(Guid connectId)
+        /// <param name="int">连接标记</param>
+        public void Close(int connectId)
         {
             tcpServer.Close(connectId);
         }
@@ -146,7 +132,7 @@ namespace socket.core.Server
         /// 断开连接通知事件方法
         /// </summary>
         /// <param name="connectId">连接标记</param>
-        private void TcpServer_eventClose(Guid connectId)
+        private void TcpServer_eventClose(int connectId)
         {
             if (OnClose != null)
                 OnClose(connectId);
@@ -158,7 +144,7 @@ namespace socket.core.Server
         /// <param name="connectId">连接标识</param>
         /// <param name="data">附加数据</param>
         /// <returns>true:设置成功,false:设置失败</returns>
-        public bool SetAttached(Guid connectId, object data)
+        public bool SetAttached(int connectId, object data)
         {
             return tcpServer.SetAttached(connectId, data);
         }
@@ -168,7 +154,7 @@ namespace socket.core.Server
         /// </summary>
         /// <param name="connectId">连接标识</param>
         /// <returns>返回附加数据</returns>
-        public T GetAttached<T>(Guid connectId)
+        public T GetAttached<T>(int connectId)
         {
             return tcpServer.GetAttached<T>(connectId);
         }

@@ -26,7 +26,7 @@ namespace socket.core.Client
         /// <summary>
         /// 已发送通知事件
         /// </summary>
-        public event Action<int> OnSend;     
+        public event Action<int> OnSend;
         /// <summary>
         /// 断开连接通知事件
         /// </summary>
@@ -34,7 +34,7 @@ namespace socket.core.Client
         /// <summary>
         /// 接收到的数据缓存
         /// </summary>
-        private  List<byte> queue;
+        private List<byte> queue;
         /// <summary>
         /// 互斥锁
         /// </summary>
@@ -63,7 +63,7 @@ namespace socket.core.Client
             Thread thread = new Thread(new ThreadStart(() =>
             {
                 queue = new List<byte>();
-                tcpClients = new TcpClients( receiveBufferSize);
+                tcpClients = new TcpClients(receiveBufferSize);
                 tcpClients.OnConnect += TcpServer_eventactionConnect;
                 tcpClients.OnReceive += TcpServer_eventactionReceive;
                 tcpClients.OnSend += TcpClients_OnSend;
@@ -78,13 +78,13 @@ namespace socket.core.Client
         /// </summary>
         /// <param name="ip">ip地址或域名</param>
         /// <param name="port">端口</param>
-        public void Connect(string ip,int port)
+        public void Connect(string ip, int port)
         {
             while (tcpClients == null)
             {
                 Thread.Sleep(2);
             }
-            tcpClients.Connect(ip,port);
+            tcpClients.Connect(ip, port);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace socket.core.Client
         /// <param name="data">数据</param>
         /// <param name="offset">偏移位</param>
         /// <param name="length">长度</param>
-        public void Send( byte[] data, int offset, int length)
+        public void Send(byte[] data, int offset, int length)
         {
             tcpClients.Send(data, offset, length);
         }
@@ -125,7 +125,7 @@ namespace socket.core.Client
         private void TcpServer_eventactionReceive(byte[] data)
         {
             if (OnReceive != null)
-            {                
+            {
                 queue.AddRange(data);
                 OnReceive(queue.Count);
             }
@@ -156,7 +156,7 @@ namespace socket.core.Client
             queue.RemoveRange(0, length);
             mutex.ReleaseMutex();
             return f;
-        }        
+        }
 
         /// <summary>
         /// 断开连接
@@ -176,7 +176,7 @@ namespace socket.core.Client
                 OnClose();
         }
 
-       
-        
+
+
     }
 }

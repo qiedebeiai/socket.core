@@ -39,7 +39,7 @@ namespace socket.core.Client
         {
             get
             {
-                if(tcpClients==null)
+                if (tcpClients == null)
                 {
                     return false;
                 }
@@ -70,13 +70,13 @@ namespace socket.core.Client
         /// </summary>
         /// <param name="ip">ip地址或域名</param>
         /// <param name="port">端口</param>
-        public void Connect(string ip,int port)
+        public void Connect(string ip, int port)
         {
             while (tcpClients == null)
             {
                 Thread.Sleep(2);
             }
-            tcpClients.Connect(ip,port);
+            tcpClients.Connect(ip, port);
         }
 
         /// <summary>

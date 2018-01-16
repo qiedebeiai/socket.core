@@ -32,10 +32,10 @@ namespace test.window.client
             Push client = new Push(receiveBufferSize, ip, port);
             //Pull client = new Pull(receiveBufferSize, ip, port);
             //Pack client = new Pack(receiveBufferSize, ip, port, 0xff);
-            for (int i = 0; i < sendnumber; i++)
-            {
-                client.Send(data, 0, data.Length);
-            }
+            //for (int i = 0; i < sendnumber; i++)
+            //{
+            //    client.Send(data, 0, data.Length);
+            //}
 
             //Thread.Sleep(1000*10);
             //client.Close();
