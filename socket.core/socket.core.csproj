@@ -17,6 +17,7 @@
 2:连接标识号从guid改为int。</PackageReleaseNotes>
     <RepositoryType>socket.core</RepositoryType>
     <Version>1.0.10</Version>
+    <RepositoryUrl>https://github.com/fengma312/socket.core/releases/tag/v1.0.10</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
