@@ -57,9 +57,9 @@ XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY
 The first 10 X bits are the header identification bits, which are used for data packet verification. The effective header identification value ranges from 0 to 1023 (0x3FF). When the header identification equals 0, the header is not checked. The last 22 bits of Y are length bits. Package length. The maximum valid packet length can not exceed 4194303 (0x3FFFFF) bytes (bytes), the application can be set by the TcpPackServer / TcpPackClient constructor parameter headerFlag  
 
 Server other methods introduced   
-* 1. bool SetAttached(Guid connectId, object data)       
+* 1. bool SetAttached(int connectId, object data)       
 > The server sets additional data for each client to prevent the user from establishing the user mapping table   
-* 2.  T GetAttached<T>(Guid connectId)    
+* 2.  T GetAttached<T>(int connectId)    
 > Get additional data for the specified client   
 
 
@@ -80,7 +80,7 @@ Paket CLI:paket add socket.core
 客户端所在socket.core.Client命名空间下，分别为三种模式 push/pull/pack    
 
 主要流程与对应的方法和事件介绍.    
-注:connectId(guid)代表着一个连接对象,data(byte[]),success(bool)   
+注:connectId(int)代表着一个连接对象,data(byte[]),success(bool)   
   
 * 1.初始化socket(对应的三种模式)    
 	>实例化服务端类 TcpPushServer/TcpPullServer/TcpPackServer        
@@ -121,9 +121,9 @@ Paket CLI:paket add socket.core
 	前10位X为包头标识位，用于数据包校验，有效包头标识取值范围0~1023(0x3FF),当包头标识等于0时，不校验包头，后22位Y为长度位，记录包体长度。有效数据包最大长度不能超过4194303（0x3FFFFF）字节(byte),应用程序可以通过TcpPackServer/TcpPackClient构造函数参数headerFlag设置
 
 服务端其它方法介绍   
-* 1. bool SetAttached(Guid connectId, object data)  
+* 1. bool SetAttached(int connectId, object data)  
 	>服务端为每个客户端设置附加数据，避免用户自己再建立用户映射表   
-* 2. T GetAttached<T>(Guid connectId)   
+* 2. T GetAttached<T>(int connectId)   
 	>获取指定客户端的附加数据
 
 	  
