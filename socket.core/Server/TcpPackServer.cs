@@ -117,12 +117,14 @@ namespace socket.core.Server
                 OnSend(connectId, length);
             }
         }
-
+               
         /// <summary>
         /// 接收通知事件方法
         /// </summary>
         /// <param name="connectId">连接标记</param>
         /// <param name="data">数据</param>
+        /// <param name="offset">偏移位</param>
+        /// <param name="length">长度</param>
         private void TcpServer_eventactionReceive(int connectId, byte[] data, int offset, int length)
         {
             if (OnReceive != null)
@@ -145,7 +147,7 @@ namespace socket.core.Server
         /// <summary>
         /// 断开连接
         /// </summary>
-        /// <param name="int">连接ID</param>
+        /// <param name="connectId">连接ID</param>
         public void Close(int connectId)
         {
             tcpServer.Close(connectId);

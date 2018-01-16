@@ -1,12 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">  
+  <PropertyGroup>    
     <Title>socket.core</Title>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>fengma_312@163.com</Authors>
     <Company>个人项目</Company>
-    <Description>This is a socket framework based on C # net standard2.0 write, can be used for .NET Framework / dotnet core assembly, can run in window (IOCP) / linux (epoll) .Use asynchronous connection, asynchronous send, asynchronous receive, Performance burst tables, and pass the stress test.
-这是一个基于C# .net standard2.0 写的socket框架，可使用于.net Framework/dotnet core程序集，能在window(IOCP)/linux(epoll)运行.使用异步连接，异步发送，异步接收，性能爆表，并且通过压力测试。</Description>
+    <Description>This is a socket framework based on C # net standard2.0 write, can be used for .NET Framework / dotnet core assembly, can run in window (IOCP) / linux (epoll) .Use asynchronous connection, asynchronous send, asynchronous receive, Performance burst tables, and pass the stress test.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/fengma312/socket.core</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/fengma312/socket.core/blob/master/LICENSE</PackageLicenseUrl>
@@ -18,6 +16,10 @@
     <RepositoryType>socket.core</RepositoryType>
     <Version>1.0.10</Version>
     <RepositoryUrl>https://github.com/fengma312/socket.core/releases/tag/v1.0.10</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\socket.core.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>

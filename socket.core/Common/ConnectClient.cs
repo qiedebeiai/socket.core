@@ -8,7 +8,7 @@ namespace socket.core.Common
     /// <summary>
     /// 已经连接的客户端
     /// </summary>
-    public class ConnectClient
+    internal class ConnectClient
     {       
         /// <summary>
         /// 套接字

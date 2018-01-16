@@ -122,7 +122,7 @@ namespace socket.core.Server
         /// <summary>
         /// 断开连接
         /// </summary>
-        /// <param name="int">连接标记</param>
+        /// <param name="connectId">连接标记</param>
         public void Close(int connectId)
         {
             tcpServer.Close(connectId);

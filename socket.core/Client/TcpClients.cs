@@ -128,7 +128,6 @@ namespace socket.core.Client
         /// <summary>
         /// 连接回调事件
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e">操作对象</param>
         private void ProcessConnect(SocketAsyncEventArgs e)
         {
@@ -192,7 +191,6 @@ namespace socket.core.Client
         /// <summary>
         /// 接受回调
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e">操作对象</param>
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
@@ -256,9 +254,6 @@ namespace socket.core.Client
         /// <summary>
         /// 发送数据到服务端
         /// </summary>
-        /// <param name="data">数据</param>
-        /// <param name="offset">偏移位</param>
-        /// <param name="length">长度</param>
         internal void Send(SendingQueue sendQuere)
         {
             if (!socket.Connected)

@@ -66,11 +66,7 @@ namespace socket.core.Server
         /// <summary>
         /// 需要发送的数据
         /// </summary>
-        private ConcurrentQueue<SendingQueue>[] sendQueues;
-        /// <summary>
-        /// 发送队列锁
-        /// </summary>
-        //private ManualResetEvent manual = new ManualResetEvent(false);
+        private ConcurrentQueue<SendingQueue>[] sendQueues;      
         /// <summary>
         /// 锁
         /// </summary>
@@ -97,7 +93,7 @@ namespace socket.core.Server
         /// </summary>   
         /// <param name="numConnections">同时处理的最大连接数</param>
         /// <param name="receiveBufferSize">用于每个套接字I/O操作的缓冲区大小(接收端)</param>
-        /// <param name="overtime">超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时</param>
+        /// <param name="overTime">超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时</param>
         internal TcpServer(int numConnections, int receiveBufferSize, int overTime)
         {
             overtime = overTime;

@@ -7,8 +7,7 @@ using System.Text;
 namespace socket.core.Common
 {
     /// <summary>
-    /// 这个类创建一个可以分开的大缓冲区并分配给SocketAsyncEventArgs对象以供每个对象使用套接字I/O操作。这使得bufffers很容易被重复使用和防范碎片堆内存。
-    /// BufferManager类中暴露的操作不是线程安全的
+    /// 缓存管理类
     /// </summary>
     internal class BufferManager
     {
