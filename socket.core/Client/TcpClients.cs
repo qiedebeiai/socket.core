@@ -246,7 +246,7 @@ namespace socket.core.Client
                 }
                 else
                 {
-                    Thread.Sleep(2);
+                    Thread.Sleep(100);
                 }
             }
         }

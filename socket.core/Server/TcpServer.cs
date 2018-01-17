@@ -169,7 +169,8 @@ namespace socket.core.Server
                 {
                     Heartbeat();
                 }));
-                heartbeat.Priority = ThreadPriority.Highest;
+                heartbeat.IsBackground = true;
+                heartbeat.Priority = ThreadPriority.Lowest;
                 heartbeat.Start();
             }
         }
@@ -329,7 +330,7 @@ namespace socket.core.Server
                 }
                 else
                 {
-                    Thread.Sleep(10);
+                    Thread.Sleep(100);
                 }
             }
         }

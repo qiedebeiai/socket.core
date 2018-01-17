@@ -87,7 +87,7 @@ namespace socket.core.Client
         {
             while (tcpClients == null)
             {
-                Thread.Sleep(2);
+                Thread.Sleep(10);
             }
             tcpClients.Connect(ip, port);
         }
