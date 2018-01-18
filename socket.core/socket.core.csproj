@@ -9,17 +9,21 @@
     <PackageProjectUrl>https://github.com/fengma312/socket.core</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/fengma312/socket.core/blob/master/LICENSE</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageTags>socket Async Cache Pool C# core socket.core</PackageTags>
+    <PackageTags>socket.core socket Async Cache Pool</PackageTags>
     <Copyright>fengma_312@163.com</Copyright>
-    <PackageReleaseNotes>1:全面提高socket性能。
-2:连接标识号从guid改为int。</PackageReleaseNotes>
+    <PackageReleaseNotes>调整发送线程的休眠时间</PackageReleaseNotes>
     <RepositoryType>socket.core</RepositoryType>
-    <Version>1.0.10</Version>
-    <RepositoryUrl>https://github.com/fengma312/socket.core/releases/tag/v1.0.10</RepositoryUrl>
+    <Version>1.0.11</Version>
+    <RepositoryUrl>https://github.com/fengma312/socket.core/releases/tag/v1.0.11</RepositoryUrl>
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netstandard2.0\socket.core.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netstandard2.0\socket.core.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>
