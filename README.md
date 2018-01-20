@@ -5,7 +5,7 @@ This is a socket framework based on C # net standard2.0 write, can be used for .
 
 下面有中文文档     
 
-Install NuGet:   https://www.nuget.org/packages/socket.core/
+Install NuGet:   https://www.nuget.org/packages/socket.core/    
 Package Manager: Install-Package socket.core   
 .Net CLI: dotnet add package socket.core   
 Paket CLI: paket add socket.core   
@@ -71,7 +71,7 @@ socket.core
 
 这是一个基于C# .net standard2.0 写的socket框架，可使用于.net Framework/dotnet core程序集，能在window(IOCP)/linux(epoll)运行.使用异步连接，异步发送，异步接收，性能爆表，并且通过压力测试。   
 ---
-安装NuGet:  https://www.nuget.org/packages/socket.core/
+安装NuGet:  https://www.nuget.org/packages/socket.core/     
 Package Manager: Install-Package socket.core   
 .Net CLI :dotnet add package socket.core      
 Paket CLI:paket add socket.core         
