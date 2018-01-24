@@ -30,27 +30,27 @@ namespace test.window.server.Server
 
         private void Server_OnAccept(int obj)
         {
-            server.SetAttached(obj, 555);
-            Console.WriteLine($"Pull已连接{obj}");
+            //server.SetAttached(obj, 555);
+            //Console.WriteLine($"Pull已连接{obj}");
         }
 
         private void Server_OnSend(int arg1, int arg2)
         {
-            Console.WriteLine($"Pull已发送:{arg1} 长度:{arg2}");
+            //Console.WriteLine($"Pull已发送:{arg1} 长度:{arg2}");
         }        
 
         private void Server_OnReceive(int arg1, int arg2)
         {
-            int aaa = server.GetAttached<int>(arg1);
-            Console.WriteLine($"Pull已接收:{arg1} 长度:{arg2}");
+            //int aaa = server.GetAttached<int>(arg1);
+            //Console.WriteLine($"Pull已接收:{arg1} 长度:{arg2}");
             byte[] data = server.Fetch(arg1, server.GetLength(arg1));            
             server.Send(arg1, data, 0, data.Length);
         }
 
         private void Server_OnClose(int obj)
         {
-            int aaa = server.GetAttached<int>(obj);
-            Console.WriteLine($"Pull断开{obj}");
+            //int aaa = server.GetAttached<int>(obj);
+            //Console.WriteLine($"Pull断开{obj}");
         }
         
     }

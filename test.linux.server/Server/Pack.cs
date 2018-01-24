@@ -30,26 +30,26 @@ namespace test.linux.server.Server
 
         private void Server_OnAccept(int obj)
         {
-            server.SetAttached(obj, 555);
-            Console.WriteLine($"Pack已连接{obj}");
+            //server.SetAttached(obj, 555);
+            //Console.WriteLine($"Pack已连接{obj}");
         }
 
         private void Server_OnSend(int arg1, int arg2)
         {
-            Console.WriteLine($"Pack已发送:{arg1} 长度:{arg2}");
+            //Console.WriteLine($"Pack已发送:{arg1} 长度:{arg2}");
         }
 
         private void Server_OnReceive(int arg1, byte[] arg2)
         {
-            int aaa = server.GetAttached<int>(arg1);
-            Console.WriteLine($"Pack已接收:{arg1} 长度:{arg2.Length}");
+            //int aaa = server.GetAttached<int>(arg1);
+            //Console.WriteLine($"Pack已接收:{arg1} 长度:{arg2.Length}");
             server.Send(arg1, arg2, 0, arg2.Length);
         }
 
         private void Server_OnClose(int obj)
         {
-            int aaa = server.GetAttached<int>(obj);
-            Console.WriteLine($"Pack断开{obj}");
+            //int aaa = server.GetAttached<int>(obj);
+            //Console.WriteLine($"Pack断开{obj}");
         }
     }
 }
