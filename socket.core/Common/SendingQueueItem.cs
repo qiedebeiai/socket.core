@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace socket.core.Common
@@ -13,6 +14,10 @@ namespace socket.core.Common
         /// 连接标记
         /// </summary>
         internal int connectId { get; set; }
+        /// <summary>
+        /// 远程IP和端口
+        /// </summary>
+        internal EndPoint remoteEndPoint { get; set; }
         /// <summary>
         /// 发送的数据
         /// </summary>
