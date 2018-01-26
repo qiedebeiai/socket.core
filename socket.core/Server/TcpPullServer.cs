@@ -23,19 +23,19 @@ namespace socket.core.Server
         /// </summary>
         public event Action<int> OnAccept;
         /// <summary>
-        /// 接收通知事件
+        /// 接收通知事件  item1:connectId,item2:数据
         /// </summary>
         public event Action<int, int> OnReceive;
         /// <summary>
-        /// 发送通知事件
+        /// 发送通知事件   item1:connectId,item2:长度
         /// </summary>
         public event Action<int, int> OnSend;
         /// <summary>
-        /// 断开连接通知事件
+        /// 断开连接通知事件  item1:connectId,
         /// </summary>
         public event Action<int> OnClose;
         /// <summary>
-        /// 接收到的数据缓存
+        /// 接收到的数据缓存 
         /// </summary>
         private Dictionary<int, List<byte>> queue;
 

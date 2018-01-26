@@ -16,15 +16,15 @@ namespace socket.core.Client
         /// </summary>
         private TcpClients tcpClients;
         /// <summary>
-        /// 连接成功事件
+        /// 连接成功事件 item1:是否连接成功
         /// </summary>
         public event Action<bool> OnConnect;
         /// <summary>
-        /// 接收通知事件
+        /// 接收通知事件 item1:长度
         /// </summary>
         public event Action<int> OnReceive;
         /// <summary>
-        /// 已发送通知事件
+        /// 已发送通知事件 item1:长度
         /// </summary>
         public event Action<int> OnSend;
         /// <summary>

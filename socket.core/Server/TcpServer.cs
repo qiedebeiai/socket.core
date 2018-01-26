@@ -72,19 +72,19 @@ namespace socket.core.Server
         /// </summary>
         private Mutex mutex = new Mutex();
         /// <summary>
-        /// 连接成功事件
+        /// 连接成功事件 item1:connectId
         /// </summary>
         internal event Action<int> OnAccept;
         /// <summary>
-        /// 接收通知事件
+        /// 接收通知事件 item1:connectId,item2:数据,item3:偏移位,item4:长度
         /// </summary>
         internal event Action<int, byte[], int, int> OnReceive;
         /// <summary>
-        /// 已送通知事件
+        /// 已发送通知事件 item1:connectId,item2:长度
         /// </summary>
         internal event Action<int, int> OnSend;
         /// <summary>
-        /// 断开连接通知事件
+        /// 断开连接通知事件 item1:connectId,
         /// </summary>
         internal event Action<int> OnClose;
 
