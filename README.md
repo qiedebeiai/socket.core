@@ -9,7 +9,7 @@ Install NuGet:   https://www.nuget.org/packages/socket.core/
 Package Manager: Install-Package socket.core   
 .Net CLI: dotnet add package socket.core   
 Paket CLI: paket add socket.core   
-A: TCP module introduction     
+One: TCP module introduction     
 Server socket.core.Server namespace, respectively, three modes push / pull / pack
 Under the socket.core.   
 Client namespace of the client, there are three modes of push / pull / pack   
