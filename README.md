@@ -9,7 +9,7 @@ Install NuGet:   https://www.nuget.org/packages/socket.core/
 Package Manager: Install-Package socket.core   
 .Net CLI: dotnet add package socket.core   
 Paket CLI: paket add socket.core   
-   
+A: TCP module introduction     
 Server socket.core.Server namespace, respectively, three modes push / pull / pack
 Under the socket.core.   
 Client namespace of the client, there are three modes of push / pull / pack   
@@ -62,6 +62,21 @@ Server other methods introduced
 * 2.  T GetAttached<T>(int connectId)    
 > Get additional data for the specified client   
 
+Two: UDP module introduction  
+  
+* 1. Initialize the UDP implementation class UdpServer / UdpClients   
+    > Server socket.core.Server.UdpServer  
+    > Client socket.core.Client.UdpClients  
+    > Parameters int receiveBufferSize Buffer size for each socket I / O operation (receiver)   
+* 2. Send data  
+    > Server server.Send (remoteEndPoint, data, offset, length)  
+    > Client client.Send (data, offset, length)  
+* 3. Trigger sent events  
+    > Server server.OnSend (remoteEndPoint, length)   
+    > Client client.OnSend (length)   
+* 3. Trigger the receiving event  
+    > Server server.OnReceive (remoteEndPoint, data, offset, length)  
+    > Client client.OnReceive (data, offset, length)  
 
 2017/12/27  
 Technology is to share, we make progress together    
@@ -74,15 +89,17 @@ socket.core
 安装NuGet:  https://www.nuget.org/packages/socket.core/     
 Package Manager: Install-Package socket.core   
 .Net CLI :dotnet add package socket.core      
-Paket CLI:paket add socket.core         
-
+Paket CLI:paket add socket.core     
+    
+一：TCP模块介绍     
+   
 服务端所在socket.core.Server命名空间下，分别为三种模式 push/pull/pack    
 客户端所在socket.core.Client命名空间下，分别为三种模式 push/pull/pack    
 
 主要流程与对应的方法和事件介绍.    
 注:connectId(int)代表着一个连接对象,data(byte[]),success(bool)   
   
-* 1.初始化socket(对应的三种模式)    
+* 1.初始化TCP实现类(对应的三种模式)    
 	>实例化服务端类 TcpPushServer/TcpPullServer/TcpPackServer        
 	>实例化客户端类 TcpPushClient/TcpPullClient/TcpPackClient    
 	>参数介绍int numConnections同时处理的最大连接数,int receiveBufferSize用于每个套接字I/O操作的缓冲区大小(接收端), int overtime超时时长,单位秒.(每10秒检查一次)，当值为0时，不设置超时,uint headerFlag包头标记范围0~1023(0x3FF),当包头标识等于0时，不校验包头    
@@ -126,7 +143,24 @@ Paket CLI:paket add socket.core
 * 2. T GetAttached<T>(int connectId)   
 	>获取指定客户端的附加数据
 
-	  
+
+二：UDP模块介绍    
+
+* 1.初始化UDP实现类UdpServer/UdpClients     
+	>服务端socket.core.Server.UdpServer    
+	>客户端socket.core.Client.UdpClients   
+   	>参数int receiveBufferSize用于每个套接字I/O操作的缓冲区大小(接收端)   
+* 2.发送数据   
+	>服务端 server.Send(remoteEndPoint,data,offset,length)      
+	>客户端 client.Send(data,offset,length)         
+* 3.触发已发送事件  
+	>服务端 server.OnSend(remoteEndPoint,length)      
+	>客户端 client.OnSend(length)    
+* 3.触发接收事件  
+	>服务端 server.OnReceive(remoteEndPoint,data,offset,length)      
+	>客户端 client.OnReceive(data,offset,length)    
+
+      	  
 	2017/12/27
 	
 	技术在于分享,大家共同进步   

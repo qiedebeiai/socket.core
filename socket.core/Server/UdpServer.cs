@@ -17,11 +17,11 @@ namespace socket.core.Server
         /// <summary>
         /// 用于监听传入连接请求的套接字
         /// </summary>
-        private Socket listenSocket;       
+        private Socket listenSocket;
         /// <summary>
         /// 用于每个套接字I/O操作的缓冲区大小
         /// </summary>
-        private int m_receiveBufferSize;     
+        private int m_receiveBufferSize;
         /// <summary>
         /// 锁
         /// </summary>
@@ -50,7 +50,7 @@ namespace socket.core.Server
         /// <summary>
         /// 构造方法
         /// </summary>
-        /// <param name="receiveBufferSize"></param>
+        /// <param name="receiveBufferSize">接收缓存大小</param>
         public UdpServer(int receiveBufferSize)
         {
             m_receiveBufferSize = receiveBufferSize;
@@ -67,7 +67,7 @@ namespace socket.core.Server
             for (int i = 0; i < sendthread; i++)
             {
                 sendQueues[i] = new ConcurrentQueue<SendingQueue>();
-            }           
+            }
         }
 
         /// <summary>
@@ -96,11 +96,11 @@ namespace socket.core.Server
                 thread.Start(i);
             }
         }
-        
+
         /// <summary>
         /// 开始接收
         /// </summary>
-        /// <param name="receiveSocketArgs"></param>
+        /// <param name="receiveSocketArgs">操作对象</param>
         private void StartReceive(SocketAsyncEventArgs receiveSocketArgs)
         {
             if (!listenSocket.ReceiveFromAsync(receiveSocketArgs))
@@ -154,7 +154,7 @@ namespace socket.core.Server
         /// <param name="length">长度</param>
         public void Send(EndPoint remoteEndPoint, byte[] data, int offset, int length)
         {
-            sendQueues[((IPEndPoint)remoteEndPoint).Port % sendthread].Enqueue(new SendingQueue() { remoteEndPoint = remoteEndPoint, data = data, offset = offset, length = length });            
+            sendQueues[((IPEndPoint)remoteEndPoint).Port % sendthread].Enqueue(new SendingQueue() { remoteEndPoint = remoteEndPoint, data = data, offset = offset, length = length });
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace socket.core.Server
         /// <summary>
         /// 发送回调
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">操作对象</param>
         private void ProcessSend(SocketAsyncEventArgs e)
         {
             if (e.SocketError == SocketError.Success)
