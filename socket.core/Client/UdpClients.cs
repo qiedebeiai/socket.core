@@ -193,6 +193,18 @@ namespace socket.core.Client
         }
 
         /// <summary>
+        /// 发送数据(因为UDP是无连接地址，所以直接可以指定任何发送地址)
+        /// </summary>
+        /// <param name="remoteEndPoint">发送地址和端口</param>
+        /// <param name="data">数据</param>
+        /// <param name="offset">偏移位</param>
+        /// <param name="length">长度</param>
+        public void Send(EndPoint remoteEndPoint, byte[] data, int offset, int length)
+        {
+            sendQueue.Enqueue(new SendingQueue() { remoteEndPoint = remoteEndPoint, data = data, offset = offset, length = length });
+        }
+
+        /// <summary>
         /// 异步发送消息 
         /// </summary>
         /// <param name="sendQuere">发送消息体</param>
