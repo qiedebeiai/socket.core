@@ -18,39 +18,39 @@ The main process and the corresponding methods and events introduced.
 Note: connectId (guid) represents a connection object, data (byte []), success (bool)  
     
 * 1. Initialize socket (corresponding to the three modes)  
-> Instantiate the server class TcpPushServer / TcpPullServer / TcpPackServer  
-> Instantiate the client class TcpPushClient / TcpPullClient / TcpPackClient 
-> Parameter introduction int numConnections maximum number of simultaneous connections, int receiveBufferSize buffer size (sink) for each socket I / O operation, int overtime timeout period in seconds (check every 10 seconds), When the value is 0, do not set the timeout, uint headerFlag Header tag range 0 ~ 1023 (0x3FF), when the header identifier is equal to 0, do not check the header     
+	>Instantiate the server class TcpPushServer / TcpPullServer / TcpPackServer  
+	>Instantiate the client class TcpPushClient / TcpPullClient / TcpPackClient 
+	>Parameter introduction int numConnections maximum number of simultaneous connections, int receiveBufferSize buffer size (sink) for each socket I / O operation, int overtime timeout period in seconds (check every 10 seconds), When the value is 0, do not set the timeout, uint headerFlag Header tag range 0 ~ 1023 (0x3FF), when the header identifier is equal to 0, do not check the header     
 * 2. Start monitoring / connecting server  
-> Server server.Start (port);  
-> Client client.Connect (ip, port);  
+	>Server server.Start (port);  
+	>Client client.Connect (ip, port);  
 * 3. Trigger the connection event   
-> Server server.OnAccept (connectId); Received a connection id, can be used to send, receive, close the tag  
-> Client client.OnConnect(success); Receives whether to connect to the server successfully   
+	>Server server.OnAccept (connectId); Received a connection id, can be used to send, receive, close the tag  
+	>Client client.OnConnect(success); Receives whether to connect to the server successfully   
 * 4. Send a message  
-> Server server.Send (connectId, data, offset, length);  
-> Client client.Send (data, offset, length);  
+	>Server server.Send (connectId, data, offset, length);  
+	>Client client.Send (data, offset, length);  
 * 5. Trigger sent events  
-> Server server.OnSend (connectId, length);  
-> Client client.OnSend (length);   
+	>Server server.OnSend (connectId, length);  
+	>Client client.OnSend (length);   
 * 6. Triggered receive events  
-> Server server.OnReceive (connectId, data);   
-> Client client.OnReceive (data);   
+	>Server server.OnReceive (connectId, data);   
+	>Client client.OnReceive (data);   
 * 7. Close the connection   
-> Server server.Close (connectId);   
-> Client client.Close ();   
+	>Server server.Close (connectId);   
+	>Client client.Close ();   
 * 8. Trigger to close the connection event   
-> Server server.OnClose (connectId);   
-> Client client.OnClose ();   
+	>Server server.OnClose (connectId);   
+	>Client client.OnClose ();   
 
 
 Three models introduction   
 * One: push  
-    > Will trigger the monitor event object OnReceive (connectId, data); the data immediately "pushed" to the application
+	> Will trigger the monitor event object OnReceive (connectId, data); the data immediately "pushed" to the application
 * Two: pull  
-    > OnReceive (connectId, length), which tells the application how much data has been received. The application checks the length of the data. If it meets, it calls the Fetch (connectId, length) method of the component, Data "pulled" out
+	>OnReceive (connectId, length), which tells the application how much data has been received. The application checks the length of the data. If it meets, it calls the Fetch (connectId, length) method of the component, Data "pulled" out
 * Three: pack  
-    > pack The model component is a combination of the push and pull models. The application does not have to deal with subcontracts. The component guarantees that every application server.OnReceive (connectId, data) /client.OnReceive (data) event provides the application with a Complete data package
+	> pack The model component is a combination of the push and pull models. The application does not have to deal with subcontracts. The component guarantees that every application server.OnReceive (connectId, data) /client.OnReceive (data) event provides the application with a Complete data package
 Note: The pack model component automatically adds a 4-byte (32-bit) header to each packet sent by the application. When the component receives the data, it is automatically packetized based on the header information. Each complete packet is sent to OnReceive The event is sent to the application
 PACK header format(4 byte)4*8=32   
 XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY  
@@ -65,19 +65,19 @@ Server other methods introduced
 Two: UDP module introduction  
   
 * 1. Initialize the UDP implementation class UdpServer / UdpClients   
-    > Server socket.core.Server.UdpServer  
-    > Client socket.core.Client.UdpClients  
-    > Parameters int receiveBufferSize Buffer size for each socket I / O operation (receiver)   
+	>Server socket.core.Server.UdpServer  
+	>Client socket.core.Client.UdpClients  
+	>Parameters int receiveBufferSize Buffer size for each socket I / O operation (receiver)   
 * 2. Send data  
-    > Server server.Send (remoteEndPoint, data, offset, length)  
-    > Client client.Send (data, offset, length)  
-	> Client client.Send(remoteEndPoint,data,offset,length)	
+	>Server server.Send (remoteEndPoint, data, offset, length)  
+	>Client client.Send (data, offset, length)  
+	>Client client.Send(remoteEndPoint,data,offset,length)	
 * 3. Trigger sent events  
-    > Server server.OnSend (remoteEndPoint, length)   
-    > Client client.OnSend (length)   
+	>Server server.OnSend (remoteEndPoint, length)   
+	>Client client.OnSend (length)   
 * 3. Trigger the receiving event  
-    > Server server.OnReceive (remoteEndPoint, data, offset, length)  
-    > Client client.OnReceive (data, offset, length)  
+	>Server server.OnReceive (remoteEndPoint, data, offset, length)  
+	>Client client.OnReceive (data, offset, length)  
 
 2017/12/27  
 Technology is to share, we make progress together    
