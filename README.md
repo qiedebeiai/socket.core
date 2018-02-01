@@ -71,6 +71,7 @@ Two: UDP module introduction
 * 2. Send data  
     > Server server.Send (remoteEndPoint, data, offset, length)  
     > Client client.Send (data, offset, length)  
+	> Client client.Send(remoteEndPoint,data,offset,length)	
 * 3. Trigger sent events  
     > Server server.OnSend (remoteEndPoint, length)   
     > Client client.OnSend (length)   
@@ -152,7 +153,8 @@ Paket CLI:paket add socket.core
    	>参数int receiveBufferSize用于每个套接字I/O操作的缓冲区大小(接收端)   
 * 2.发送数据   
 	>服务端 server.Send(remoteEndPoint,data,offset,length)      
-	>客户端 client.Send(data,offset,length)         
+	>客户端 client.Send(data,offset,length)
+	>客户端 client.Send(remoteEndPoint,data,offset,length)	
 * 3.触发已发送事件  
 	>服务端 server.OnSend(remoteEndPoint,length)      
 	>客户端 client.OnSend(length)    
