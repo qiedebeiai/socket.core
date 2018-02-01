@@ -43,14 +43,13 @@ Note: connectId (guid) represents a connection object, data (byte []), success (
 	>Server server.OnClose (connectId);   
 	>Client client.OnClose ();   
 
-
 Three models introduction   
 * One: push  
-	> Will trigger the monitor event object OnReceive (connectId, data); the data immediately "pushed" to the application
+	>Will trigger the monitor event object OnReceive (connectId, data); the data immediately "pushed" to the application
 * Two: pull  
 	>OnReceive (connectId, length), which tells the application how much data has been received. The application checks the length of the data. If it meets, it calls the Fetch (connectId, length) method of the component, Data "pulled" out
 * Three: pack  
-	> pack The model component is a combination of the push and pull models. The application does not have to deal with subcontracts. The component guarantees that every application server.OnReceive (connectId, data) /client.OnReceive (data) event provides the application with a Complete data package
+	>pack The model component is a combination of the push and pull models. The application does not have to deal with subcontracts. The component guarantees that every application server.OnReceive (connectId, data) /client.OnReceive (data) event provides the application with a Complete data package
 Note: The pack model component automatically adds a 4-byte (32-bit) header to each packet sent by the application. When the component receives the data, it is automatically packetized based on the header information. Each complete packet is sent to OnReceive The event is sent to the application
 PACK header format(4 byte)4*8=32   
 XXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYY  
@@ -152,9 +151,9 @@ Paket CLI:paket add socket.core
 	>客户端socket.core.Client.UdpClients   
    	>参数int receiveBufferSize用于每个套接字I/O操作的缓冲区大小(接收端)   
 * 2.发送数据   
-	>服务端 server.Send(remoteEndPoint,data,offset,length)      
-	>客户端 client.Send(data,offset,length)
-	>客户端 client.Send(remoteEndPoint,data,offset,length)	
+	>服务端 server.Send(remoteEndPoint,data,offset,length)        
+	>客户端 client.Send(data,offset,length)   
+	>客户端 client.Send(remoteEndPoint,data,offset,length)	  
 * 3.触发已发送事件  
 	>服务端 server.OnSend(remoteEndPoint,length)      
 	>客户端 client.OnSend(length)    
